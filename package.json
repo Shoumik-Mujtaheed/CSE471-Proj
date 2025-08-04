@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/Shoumik-Mujtaheed/CSE471-Proj/issues"
   },
-  "homepage": "https://github.com/Shoumik-Mujtaheed/CSE471-Proj#readme"
+  "homepage": "https://github.com/Shoumik-Mujtaheed/CSE471-Proj#readme",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
 }
