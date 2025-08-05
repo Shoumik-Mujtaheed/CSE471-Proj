@@ -2,7 +2,7 @@ Tech Stack: MERN
 
 ● Language: JavaScript 
 ● Framework: Express.js, Node.js 
-● Styling: TailwindCSS
+● Styling: CSS
 ● Database: MongoDB
 ● ORM: Prisma
 ● Deployment: Vercel
