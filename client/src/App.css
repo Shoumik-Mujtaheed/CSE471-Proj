@@ -149,7 +149,7 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
   position: fixed;
   top: 0; left: 0;
   width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.3);
+  background: rgba(202, 202, 202, 0.3);
   display: flex; align-items: center; justify-content: center; z-index: 99;
 }
 .modal {
@@ -157,7 +157,7 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
   border-radius: 6px;
   padding: 24px;
   min-width: 320px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 24px rgba(255, 255, 255, 0.12);
 }
 
 /* ===== Utility Classes ===== */
@@ -183,7 +183,7 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ===== Responsive padding for pages ===== */
 .page-root, .homepage-root {
-  background: var(--background-gray);
+  background: var(--background-white);
   min-height: 100vh;
   padding-left: 32px;
   padding-right: 32px;

@@ -1,9 +1,14 @@
+// src/App.jsx
 import React from "react";
-import HomePage from "./pages/HomePage";
 import InventoryPage from "./pages/InventoryPage";
+import "./App.css"; // Make sure your styles are loaded!
 
 function App() {
-  return <InventoryPage />;
+  return (
+    <div>
+      <InventoryPage />
+    </div>
+  );
 }
 
 export default App;

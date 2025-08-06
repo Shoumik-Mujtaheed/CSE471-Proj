@@ -13,7 +13,7 @@ function MedicineForm({ open, onClose, onSubmit, initialValues = {}, mode = "add
         quantity: initialValues.quantity || "",
       });
     }
-  }, [open, initialValues]);
+ }, [open, initialValues && initialValues._id]);
 
   const handleChange = e => {
     const { name, value } = e.target;
