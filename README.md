@@ -15,14 +15,14 @@ Patient Facing Features
 Patient Registration: The system must allow for the quick and accurate registration of new patients, capturing personal details, contact information, and medical history. Each patient should be assigned a unique ID for use throughout the system.
 Appointment Scheduling: Implement a module for patients to book, reschedule, or cancel appointments with doctors. The system should also send automated reminders to both patients and healthcare providers. 2,3 
 Electronic Medical Records (EMR) Access: Develop a system for maintaining detailed EMRs for each patient, including diagnoses, treatment plans. Patients will be able to upload their existing medical history to their profile which will show on their EMR. And the doctors or hospital staff will upload the patients’ medicine prescription and test results that they receive from our hospital. 1 8
-Patient Portal: Create a secure online portal where patients can view their health records, access lab results, see their appointment history, upload their existing medical records and communicate with their healthcare providers. 6 and 10
+Patient Portal: Create a secure online portal where patients can view their health records, access lab results, see their appointment history, upload their existing medical records and communicate with their healthcare providers.
 
 Doctors and Staff Management 
 Doctor/Staff Management: The system should allow administrators to manage staff records, including personal information, qualifications, and roles. This includes adding new doctors and staff to the system. 4
 
 Doctor & staff Scheduling: Create a feature for managing staff schedules including doctor, shifts, and leave requests to ensure optimal staffing levels and avoid conflicts. 
 
-Doctors writing prescriptions: The doctors will be able to write prescriptions for the patients and the system will track the patients’ medications. 5,10 ,9
+Doctors writing prescriptions: The doctors will be able to write prescriptions for the patients and the system will track the patients’ medications. 
 
 Doctor Referral and Lab Test Module:
 Enable doctors to seamlessly refer patients to other specialists within the system. During the referral, the doctor can also order necessary laboratory or imaging tests (e.g., blood work, X-rays, etc.) relevant to the case. The referred doctor will have access to the patient's profile, test orders, and results which will ensure smooth handovers and faster diagnosis and treatment planning.Additionally, the patient's lab test results will be automatically uploaded to their Electronic Medical Record (EMR) falls under a lot
