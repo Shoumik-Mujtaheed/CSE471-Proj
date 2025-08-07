@@ -1,7 +1,6 @@
-// src/App.jsx
 import React from "react";
 import InventoryPage from "./pages/InventoryPage";
-import "./App.css"; // Make sure your styles are loaded!
+import "./App.css"; 
 
 function App() {
   return (

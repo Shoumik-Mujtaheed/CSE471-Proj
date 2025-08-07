@@ -23,10 +23,17 @@ function BulkUploadModal({ open, onClose, onSuccess }) {
       const data = await res.json();
       setResult(data);
       setUploading(false);
+
+      if (!res.ok) {
+        alert("Upload failed: " + (data.message || "Unknown error"));
+        return;
+      }
+
       onSuccess && onSuccess(); // Refresh inventory if needed in parent
+      alert("Upload Successful");
     } catch {
       setUploading(false);
-      alert("Upload failed");
+      alert("Upload failed (network or server error)");
     }
   };
 

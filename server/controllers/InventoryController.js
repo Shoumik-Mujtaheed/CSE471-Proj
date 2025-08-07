@@ -75,11 +75,14 @@ export const bulkUploadMedicines = async (req, res) => {
       }
       let med = await Inventory.findOne({ name: name.trim() });
       if (med) {
-        med.price = Number(price);
-        if (quantity !== undefined) med.quantity = Number(quantity);
+        med.price = Number(price); // you probably still want to update the price
+        if (quantity !== undefined) {
+          med.quantity += Number(quantity); // <-- add new quantity to existing
+        }
         await med.save();
-        updated++;
-      } else {
+          updated++;
+      }
+      else {
         await Inventory.create({
           name: name.trim(),
           price: Number(price),
