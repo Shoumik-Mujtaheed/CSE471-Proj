@@ -1,7 +1,8 @@
 import React, { useState } from "react";
+import "../App.css";
 
 function AdminSignInPage({ onLogin }) {
-  const [username, setUsername] = useState('');
+  const [name, setname] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
@@ -12,7 +13,7 @@ function AdminSignInPage({ onLogin }) {
       const res = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ name, password })
       });
       const data = await res.json();
       if (!res.ok) return setError(data.message || "Login failed");
@@ -32,11 +33,11 @@ function AdminSignInPage({ onLogin }) {
         <div>
           <input
             type="text"
-            placeholder="Username"
-            autoComplete="username"
+            placeholder="name"
+            autoComplete="name"
             required
-            value={username}
-            onChange={e => setUsername(e.target.value)}
+            value={name}
+            onChange={e => setname(e.target.value)}
             style={{ width: "100%", marginBottom: 10 }}
           />
         </div>

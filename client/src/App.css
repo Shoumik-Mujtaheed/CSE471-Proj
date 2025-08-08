@@ -93,6 +93,17 @@ img {
   height: auto;
 }
 
+.centered {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  text-align: center;
+}
+
+
 /* ===== Button Styles ===== */
 .button-main, .appointment-button, .emr-button, .invoice-button, .home-button, .prescription-button {
   display: flex;

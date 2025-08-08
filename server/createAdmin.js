@@ -3,15 +3,15 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
-import Admin from '../models/Admin.js';        
+import Admin from './models/Admin.js';        
 
 dotenv.config();
 
 // Admin information
 const adminInfo = {
-  username: 'Shoumik M',
-  email: 'shoumik.mujtaheed@gmail.com',
-  password: 'admin1@sho'
+  name: 'admin1',
+  email: 'admin1@gmail.com',
+  password: 'admin1sho'
 };
 
 // Main function
@@ -31,7 +31,7 @@ async function createAdmin() {
 
     // Create the admin
     const newAdmin = new Admin({
-      username: adminInfo.username,
+      name: adminInfo.name,
       email: adminInfo.email,
       password: hashed
     });
