@@ -8,24 +8,24 @@ import {
   deleteMedicine,
   bulkUploadMedicines
 } from '../controllers/InventoryController.js';
-import adminAuth from '../middleware/adminAuthMiddleware.js'; // You must create this middleware
+//import adminAuth from '../middleware/adminAuthMiddleware.js'; // You must create this middleware
 
 const router = express.Router();
 const upload = multer(); // memory storage (buffer), as CSVs are usually small
 
 // Get all (admin-only)
-router.get('/', adminAuth, getAllMedicines);
+router.get('/', getAllMedicines);
 
 // Add medicine
-router.post('/', adminAuth, addMedicine);
+router.post('/', addMedicine);
 
 // Update medicine
-router.put('/:id', adminAuth, updateMedicine);
+router.put('/:id', updateMedicine);
 
 // Delete medicine
-router.delete('/:id', adminAuth,  deleteMedicine);
+router.delete('/:id',  deleteMedicine);
 
 // Bulk upload by CSV
-router.post('/bulk-upload',adminAuth, upload.single('file'), bulkUploadMedicines);
+router.post('/bulk-upload', upload.single('file'), bulkUploadMedicines);
 
 export default router;
