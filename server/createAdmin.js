@@ -2,7 +2,7 @@
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import Admin from './models/Admin.js';        
 
 dotenv.config();
@@ -27,13 +27,13 @@ async function createAdmin() {
     }
 
     // Hash the password
-    const hashed = await bcrypt.hash(adminInfo.password, 10);
+    //const hashed = await bcrypt.hash(adminInfo.password, 10);
 
     // Create the admin
     const newAdmin = new Admin({
       name: adminInfo.name,
       email: adminInfo.email,
-      password: hashed
+      password: adminInfo.password
     });
 
     await newAdmin.save();

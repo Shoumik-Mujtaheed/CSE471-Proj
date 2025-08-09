@@ -1,7 +1,7 @@
 // server/controllers/adminController.js
 
 import Admin from '../models/Admin.js';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 // POST /api/admin/login
