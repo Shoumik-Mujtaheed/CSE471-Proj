@@ -73,15 +73,39 @@ export default function DoctorDashboard() {
   // LOGOUT FUNCTION
   const handleLogout = () => {
     localStorage.removeItem('doctorToken');
+    localStorage.removeItem('doctorInfo');
     window.location.href = '/doctor/login';
   };
+
+  // Get doctor info from localStorage
+  const getDoctorInfo = () => {
+    try {
+      const info = localStorage.getItem('doctorInfo');
+      return info ? JSON.parse(info) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const doctorInfo = getDoctorInfo();
 
   // Check if user is logged in
   if (!getToken()) {
     return (
       <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <h2>Please log in to access doctor dashboard</h2>
-        <button onClick={() => window.location.href = '/doctor/login'}>
+        <h2>🔐 Please log in to access doctor dashboard</h2>
+        <p>You need to be logged in as a doctor to access this page.</p>
+        <button 
+          onClick={() => window.location.href = '/doctor/login'}
+          style={{ 
+            padding: '1rem 2rem', 
+            backgroundColor: '#007bff', 
+            color: 'white', 
+            border: 'none', 
+            borderRadius: '4px',
+            fontSize: '1rem'
+          }}
+        >
           Go to Login
         </button>
       </div>
@@ -92,8 +116,24 @@ export default function DoctorDashboard() {
     <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
       {/* HEADER SECTION */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1>Doctor Dashboard</h1>
-        <button onClick={handleLogout} style={{ padding: '0.5rem 1rem', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px' }}>
+        <div>
+          <h1>👨‍⚕️ Doctor Dashboard</h1>
+          {doctorInfo && (
+            <p style={{ margin: 0, color: '#666' }}>
+              Welcome, Dr. {doctorInfo.name} | {doctorInfo.specialty}
+            </p>
+          )}
+        </div>
+        <button 
+          onClick={handleLogout} 
+          style={{ 
+            padding: '0.5rem 1rem', 
+            backgroundColor: '#dc3545', 
+            color: 'white', 
+            border: 'none', 
+            borderRadius: '4px' 
+          }}
+        >
           Logout
         </button>
       </div>

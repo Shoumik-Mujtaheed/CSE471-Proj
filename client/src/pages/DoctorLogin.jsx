@@ -7,24 +7,36 @@ export default function DoctorLogin() {
 
   const handleSubmit = async e => {
     e.preventDefault();
-    setMessage('');
+    setMessage('Loading...');
+    
     try {
+      console.log('Attempting login with:', { email, password: '***' });
+      
       const res = await fetch('/api/doctor/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
+      
+      console.log('Response status:', res.status);
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Login failed');
-      // Save token for later auth - this token is used in protected routes
+      console.log('Response data:', data);
+      
+      if (!res.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+      
+      // Save token and user info
       localStorage.setItem('doctorToken', data.token);
+      localStorage.setItem('doctorInfo', JSON.stringify(data.doctor));
+      
       setMessage('✅ Logged in successfully! Redirecting to dashboard...');
       
-      // Redirect to doctor dashboard
-      setTimeout(() => {
-        window.location.href = '/doctor/dashboard';
-      }, 1000);
+      // Redirect immediately without delay
+      window.location.href = '/doctor/dashboard';
+      
     } catch (err) {
+      console.error('Login error:', err);
       setMessage('❌ ' + err.message);
     }
   };

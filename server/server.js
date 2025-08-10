@@ -9,6 +9,7 @@ import inventoryRoutes from './routes/InventoryRoutes.js';
 import doctorRoutes    from './routes/doctor.js';
 import staffRoutes     from './routes/staff.js';
 import adminRoutes     from './routes/admin.js';
+import medicationRoutes from './routes/medications.js';
 
 dotenv.config();    // Load .env variables
 connectDB();        // Connect to MongoDB
@@ -28,6 +29,9 @@ app.use('/api/staff', staffRoutes);
 
 // Inventory routes (medicine CRUD & bulk upload)
 app.use('/api/inventory', inventoryRoutes);
+
+// Medication routes (search, categories, types)
+app.use('/api/medications', medicationRoutes);
 
 app.use('/api/admin', adminRoutes);
 

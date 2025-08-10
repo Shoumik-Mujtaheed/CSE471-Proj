@@ -42,18 +42,15 @@ export const registerDoctor = async (req, res) => {
     const doctor = new Doctor({ user: user._id, specialty });
     await doctor.save();
 
-    const token = signToken(user._id);
-
     return res.status(201).json({
-      token,
+      message: 'Doctor registered successfully',
       doctor: {
         id: doctor._id,
         name: user.name,
         email: user.email,
         specialty: doctor.specialty,
       },
-      role: 'doctor',
-      nextPath: '/doctor',
+      role: 'doctor'
     });
   } catch (err) {
     if (err.name === 'ValidationError') {

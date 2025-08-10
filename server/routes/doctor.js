@@ -16,6 +16,15 @@ import {
   updateLeaveRequest,
   cancelLeaveRequest
 } from '../controllers/doctorController.js';
+import {
+  // PRESCRIPTION MANAGEMENT
+  createPrescription,
+  getMyPrescriptions,
+  getPrescriptionById,
+  updatePrescription,
+  cancelPrescription,
+  getPatientPrescriptionHistory
+} from '../controllers/prescriptionController.js';
 import { protect, loadDoctor } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -40,5 +49,13 @@ router.get('/leave-requests', getMyLeaveRequests);
 router.post('/leave-requests', requestLeave);
 router.put('/leave-requests/:id', updateLeaveRequest);
 router.delete('/leave-requests/:id', cancelLeaveRequest);
+
+// Doctor prescription management
+router.post('/prescriptions', createPrescription);
+router.get('/prescriptions', getMyPrescriptions);
+router.get('/prescriptions/:id', getPrescriptionById);
+router.put('/prescriptions/:id', updatePrescription);
+router.delete('/prescriptions/:id', cancelPrescription);
+router.get('/patients/:id/prescriptions', getPatientPrescriptionHistory);
 
 export default router;
