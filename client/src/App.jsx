@@ -1,32 +1,45 @@
-import React, { useState, useEffect } from "react";
-import InventoryPage from "./pages/InventoryPage";
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import LandingPage from "./pages/LandingPage";
 import AdminSignInPage from "./pages/AdminSignInPage";
+import Registration from "./pages/Registration";
+import Login from "./pages/Login";
+import InventoryPage from "./pages/InventoryPage";
+import { isAdminLoggedIn, isUserLoggedIn, logoutAdmin, logoutUser } from "./utils/auth";
 
 function App() {
-  // Start by assuming NOT logged in
-  const [loggedIn, setLoggedIn] = useState(false);
-
-  // On initial mount, check for token in localStorage
-  useEffect(() => {
-    const token = localStorage.getItem('adminToken');
-    setLoggedIn(!!token);
-  }, []);
-
-  // Handler for successful login
-  const handleLogin = () => setLoggedIn(true);
-
-  // Handler for logout — call this from your inventory page somewhere if you make a logout button
-  const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    setLoggedIn(false);
-  };
-
-  // Optionally, pass handleLogout to InventoryPage
-
   return (
-    loggedIn
-      ? <InventoryPage onLogout={handleLogout} />
-      : <AdminSignInPage onLogin={handleLogin} />
+    <Routes>
+      {/* Landing */}
+      <Route path="/" element={<LandingPage />} />
+
+      {/* Admin Login */}
+      <Route path="/admin-login" element={<AdminSignInPage />} />
+
+      {/* User Registration & Login */}
+      <Route path="/register" element={<Registration />} />
+      <Route path="/login" element={<Login />} />
+
+      {/* Admin Protected Route */}
+      <Route
+        path="/admin/inventory"
+        element={
+          isAdminLoggedIn()
+            ? <InventoryPage onLogout={logoutAdmin} />
+            : <Navigate to="/admin-login" />
+        }
+      />
+
+      {/* User Protected Route */}
+      <Route
+        path="/home"
+        element={
+          isUserLoggedIn()
+            ? <h1>User Home Page</h1> // replace with actual home page later
+            : <Navigate to="/login" />
+        }
+      />
+    </Routes>
   );
 }
 

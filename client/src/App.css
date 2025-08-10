@@ -63,7 +63,7 @@
   --danger-red: #b3261e;
 
   --border-default: rgba(0, 0, 0, 0.2);
-  --border-light: rgba(44, 44, 44, 0.4);
+  --border-light: rgba(128, 128, 128, 0.4);
   --background-gray: #fafafa;
 }
 
@@ -86,7 +86,7 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   font-family: var(--font-family-inter);
-  background: var(--background-gray);
+  background: var(--background-white);
 }
 img {
   max-width: 100%;
