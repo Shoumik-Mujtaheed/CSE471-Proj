@@ -5,8 +5,9 @@ import AdminSignInPage from "./pages/AdminSignInPage";
 import Registration from "./pages/Registration";
 import Login from "./pages/Login";
 import InventoryPage from "./pages/InventoryPage";
-import { isAdminLoggedIn, isUserLoggedIn, logoutAdmin, logoutUser } from "./utils/auth";
 import HomePage from "./pages/HomePage";
+import DoctorDashboard from "./pages/DoctorDashboard"; // Add this import
+import { isAdminLoggedIn, isUserLoggedIn, logoutAdmin, getUserRole } from "./utils/auth";
 
 function App() {
   return (
@@ -30,20 +31,22 @@ function App() {
             : <Navigate to="/admin-login" />
         }
       />
-      {/*Doctor Protected Route */}
+
+      {/* Doctor Protected Route */}
       <Route
         path="/doctor-dashboard"
         element={
           isUserLoggedIn() && getUserRole() === 'doctor'
             ? <DoctorDashboard />
             : <Navigate to="/login" />
-      }
-    />
-      {/* User Protected Route */}
+        }
+      />
+
+      {/* Patient Protected Route */}
       <Route
         path="/home"
         element={
-          isUserLoggedIn()
+          isUserLoggedIn() && getUserRole() === 'patient'
             ? <HomePage /> 
             : <Navigate to="/login" />
         }

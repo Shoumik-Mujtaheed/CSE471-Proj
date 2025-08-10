@@ -33,12 +33,15 @@ export const registerUser = async (req, res) => {
 
     if (user) {
       res.status(201).json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        bloodGroup: user.bloodGroup,
-        token: generateToken(user._id)
+        token: generateToken(user._id),
+        user: {                    // ← Add wrapper for consistency
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          bloodGroup: user.bloodGroup,
+          phoneNumber: user.phoneNumber
+        }
       });
     } else {
       res.status(400).json({ message: 'Invalid user data' });
@@ -47,6 +50,7 @@ export const registerUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // @desc    Login user
 // @route   POST /api/users/login
@@ -60,12 +64,15 @@ export const loginUser = async (req, res) => {
 
     if (user && (await user.matchPassword(password))) {
       res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        bloodGroup: user.bloodGroup,
-        token: generateToken(user._id)
+        token: generateToken(user._id),
+        user: {                    // ← Add this wrapper object
+          id: user._id,            // ← Use 'id' instead of '_id' for consistency
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          bloodGroup: user.bloodGroup,
+          phoneNumber: user.phoneNumber
+        }
       });
     } else {
       res.status(401).json({ message: 'Invalid email or password' });
@@ -74,6 +81,7 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // @desc    Get logged-in user's profile
 // @route   GET /api/users/profile
