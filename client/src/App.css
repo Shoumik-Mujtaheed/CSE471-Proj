@@ -98,7 +98,7 @@ img {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  min-height: 200vh;
   padding: 20px;
   text-align: center;
 }
@@ -199,10 +199,10 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
   padding-left: 32px;
   padding-right: 32px;
 }
-@media (max-width: 1440px) {
+@media (max-width: 1920px) {
   .page-root, .homepage-root { padding-left: 24px; padding-right: 24px; }
 }
-@media (max-width: 768px) {
+@media (max-width: 1080px) {
   .page-root, .homepage-root { padding-left: 16px; padding-right: 16px; }
 }
 

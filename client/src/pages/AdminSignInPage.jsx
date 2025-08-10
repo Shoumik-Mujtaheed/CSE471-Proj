@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Add this import
 import "../App.css";
 
 function AdminSignInPage({ onLogin }) {
+  const navigate = useNavigate(); // Add this line
   const [name, setname] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -20,6 +22,8 @@ function AdminSignInPage({ onLogin }) {
 
       // Save token in localStorage
       localStorage.setItem('adminToken', data.token);
+      // Redirect to inventory page
+      navigate("/admin/inventory");
       if (onLogin) onLogin();
     } catch (err) {
       setError("Network error");

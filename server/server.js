@@ -2,12 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/database.js';
+
+
 import inventoryRoutes from './routes/InventoryRoutes.js';
 import adminRoutes from './routes/AdminRoutes.js';
 import prescriptionRoutes from './routes/PrescriptionRoutes.js';
 import invoiceRoutes from './routes/InvoiceRoutes.js';
 import UserRoutes from './routes/UserRoutes.js';
-
+import DoctorRoutes from './routes/DoctorRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -25,6 +27,10 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/prescriptions', prescriptionRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/users', UserRoutes);
+app.use('/api/doctor', DoctorRoutes);
+
+
+
 
 // Basic test route
 app.get('/api/health', (req, res) => {

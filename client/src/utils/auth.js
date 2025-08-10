@@ -14,4 +14,19 @@ export const logoutAdmin = () => {
 
 export const logoutUser = () => {
   localStorage.removeItem('userToken');
+  localStorage.removeItem('userData');
+};
+
+// Add this new function for role-based routing
+export const getUserRole = () => {
+  try {
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+      const user = JSON.parse(userData);
+      return user.role;
+    }
+    return null;
+  } catch {
+    return null;
+  }
 };

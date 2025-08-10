@@ -6,6 +6,7 @@ import Registration from "./pages/Registration";
 import Login from "./pages/Login";
 import InventoryPage from "./pages/InventoryPage";
 import { isAdminLoggedIn, isUserLoggedIn, logoutAdmin, logoutUser } from "./utils/auth";
+import HomePage from "./pages/HomePage";
 
 function App() {
   return (
@@ -29,13 +30,21 @@ function App() {
             : <Navigate to="/admin-login" />
         }
       />
-
+      {/*Doctor Protected Route */}
+      <Route
+        path="/doctor-dashboard"
+        element={
+          isUserLoggedIn() && getUserRole() === 'doctor'
+            ? <DoctorDashboard />
+            : <Navigate to="/login" />
+      }
+    />
       {/* User Protected Route */}
       <Route
         path="/home"
         element={
           isUserLoggedIn()
-            ? <h1>User Home Page</h1> // replace with actual home page later
+            ? <HomePage /> 
             : <Navigate to="/login" />
         }
       />

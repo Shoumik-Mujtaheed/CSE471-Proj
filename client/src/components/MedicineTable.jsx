@@ -76,9 +76,7 @@ function MedicineTable({
                   <button
                     style={{ color: "red" }}
                     onClick={() => {
-                      if (
-                        window.confirm("Are you sure you want to delete this medicine?")
-                      ) {
+                       {
                         onDeleteMedicine && onDeleteMedicine(med._id);
                       }
                     }}
