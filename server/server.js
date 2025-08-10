@@ -1,7 +1,13 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import connectDB from './config/database.js'; 
+import connectDB from './config/database.js';
+import inventoryRoutes from './routes/InventoryRoutes.js';
+import adminRoutes from './routes/AdminRoutes.js';
+import prescriptionRoutes from './routes/PrescriptionRoutes.js';
+import invoiceRoutes from './routes/InvoiceRoutes.js';
+import UserRoutes from './routes/UserRoutes.js';
+
 
 // Load environment variables
 dotenv.config();
@@ -14,6 +20,11 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/prescriptions', prescriptionRoutes);
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/users', UserRoutes);
 
 // Basic test route
 app.get('/api/health', (req, res) => {

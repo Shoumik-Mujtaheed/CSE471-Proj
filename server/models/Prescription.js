@@ -9,7 +9,7 @@ const prescriptionSchema = new mongoose.Schema(
     },
     doctor: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // The doctor who wrote the prescription
+      ref: "User",
       required: true,
     },
     disease: {
@@ -17,15 +17,35 @@ const prescriptionSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    prescribedMedicines: {
-      type: [String], 
+    // UPDATED: More detailed medicine prescriptions
+    prescribedMedicines: [{
+      medicineId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Inventory', 
+        required: true 
+      },
+      medicineName: { type: String, required: true },
+      quantity: { type: Number, required: true, min: 1 },
+      price: { type: Number, required: true, min: 0 }, // Price at time of prescription
+      instructions: { type: String, trim: true }, // e.g., "Take twice daily"
+      total: { type: Number, required: true, min: 0 } // quantity * price
+    }],
+    // ADDED: Total amount for the entire prescription
+    totalAmount: {
+      type: Number,
       required: true,
-      trim: true,
+      min: 0,
     },
-    // Only include referredDoctor if there's a referral
+    // ADDED: Prescription status
+    status: {
+      type: String,
+      enum: ['active', 'completed', 'cancelled'],
+      default: 'active',
+    },
+    // Keep your existing referral fields
     referredDoctor: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // The doctor to whom the patient is referred, if any
+      ref: "User",
     },
     referredDoctorName: {
       type: String,
