@@ -7,6 +7,9 @@ import adminRoutes from './routes/AdminRoutes.js';
 import prescriptionRoutes from './routes/PrescriptionRoutes.js';
 import invoiceRoutes from './routes/InvoiceRoutes.js';
 import UserRoutes from './routes/UserRoutes.js';
+import doctorRoutes from './routes/doctor.js';
+import staffRoutes from './routes/staff.js';
+import medicationRoutes from './routes/medications.js';
 
 
 // Load environment variables
@@ -25,6 +28,9 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/prescriptions', prescriptionRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/users', UserRoutes);
+app.use('/api/doctor', doctorRoutes);
+app.use('/api/staff', staffRoutes);
+app.use('/api/medications', medicationRoutes);
 
 // Basic test route
 app.get('/api/health', (req, res) => {

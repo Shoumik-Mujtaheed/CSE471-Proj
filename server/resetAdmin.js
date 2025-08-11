@@ -1,13 +1,10 @@
-// server/createAdmin.js
+// server/resetAdmin.js
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import bcrypt from 'bcryptjs';
 import Admin from './models/Admin.js';        
 
 dotenv.config();
-
-
 
 // Admin information
 const adminInfo = {
@@ -17,16 +14,14 @@ const adminInfo = {
 };
 
 // Main function
-async function createAdmin() {
+async function resetAdmin() {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
+    console.log('🔄 Resetting admin account...');
 
-    // Check if admin with same email already exists
-    const exists = await Admin.findOne({ email: adminInfo.email });
-    if (exists) {
-      console.log('Admin already exists with this email.');
-      process.exit(0);
-    }
+    // Delete existing admin
+    await Admin.deleteMany({ email: adminInfo.email });
+    console.log('✅ Deleted existing admin account');
 
     // Create the admin (password will be auto-hashed by the model)
     const newAdmin = new Admin({
@@ -36,14 +31,17 @@ async function createAdmin() {
     });
 
     await newAdmin.save();
+    console.log('✅ Admin created successfully!');
+    console.log('📋 Admin Credentials:');
+    console.log(`   Name: ${adminInfo.name}`);
+    console.log(`   Password: ${adminInfo.password}`);
+    console.log('🔐 Password is now properly hashed in database');
 
-    console.log('Admin created successfully!');
     process.exit(0);
-
   } catch (err) {
-    console.error('Failed to create admin:', err);
+    console.error('Failed to reset admin:', err);
     process.exit(1);
   }
 }
 
-createAdmin();
+resetAdmin();
