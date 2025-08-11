@@ -5,7 +5,7 @@ import "../App.css";
 function HomePage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null); // { id, name, email, role }
+  const [user, setUser] = useState(null);
   const [error, setError] = useState("");
 
   // Load current user from token
@@ -26,8 +26,9 @@ function HomePage() {
         });
 
         if (!res.ok) {
-          // invalid/expired token or other issue
+          console.error("Failed to fetch user data:", res.status, res.statusText);
           localStorage.removeItem("userToken");
+          localStorage.removeItem("userData");
           navigate("/login");
           return;
         }
@@ -35,20 +36,28 @@ function HomePage() {
         const data = await res.json();
         if (!data?.user) {
           localStorage.removeItem("userToken");
+          localStorage.removeItem("userData");
           navigate("/login");
           return;
         }
 
-        // Restrict to patients only for this Home
+        // Redirect non-patients to their appropriate pages
         if (data.user.role !== "patient") {
-          setError("This page is for patients only.");
-          // You can redirect role-based, e.g., navigate('/dashboard') for doctors/staff
-          // For now, send them to login or a generic dashboard:
-          // navigate("/dashboard");
+          if (data.user.role === "doctor") {
+            navigate("/doctor-dashboard");
+            return;
+          } else if (data.user.role === "admin") {
+            navigate("/admin/inventory");
+            return;
+          } else {
+            navigate("/login");
+            return;
+          }
         }
 
         setUser(data.user);
       } catch (e) {
+        console.error("Error loading user:", e);
         setError("Failed to load user.");
       } finally {
         setLoading(false);
@@ -60,13 +69,14 @@ function HomePage() {
 
   const handleLogout = () => {
     localStorage.removeItem("userToken");
+    localStorage.removeItem("userData");
     navigate("/login");
   };
 
   const goAppointments = () => navigate("/appointments");
   const goProfile = () => navigate("/profile");
   const goPrescriptions = () => navigate("/prescriptions");
-  const goHome = () => navigate("/home"); // current page, but keeps the header button consistent
+  const goHome = () => navigate("/home");
 
   if (loading) {
     return (
