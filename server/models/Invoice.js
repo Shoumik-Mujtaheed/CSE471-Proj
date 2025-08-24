@@ -58,7 +58,7 @@ const invoiceSchema = new mongoose.Schema(
     // UPDATED: More comprehensive status options
     status: {
       type: String,
-      enum: ['pending', 'paid', 'overdue', 'cancelled', 'partial'],
+      enum: ['pending', 'paid'],
       default: 'pending',
     },
     // ADDED: Important dates for invoice management

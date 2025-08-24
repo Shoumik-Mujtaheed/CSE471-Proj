@@ -3,6 +3,8 @@ import User from '../models/User.js';
 import Doctor from '../models/Doctor.js';
 import Appointment from '../models/Appointment.js';
 import Prescription from '../models/Prescription.js';
+import Inventory from '../models/Inventory.js';
+import { generateInvoiceForPrescription } from './InvoiceController.js';
 
 /* =================== DOCTOR PROFILE MANAGEMENT ====================== */
 
@@ -306,22 +308,56 @@ export const updateAppointmentStatus = async (req, res) => {
 /* =================== PRESCRIPTION MANAGEMENT ====================== */
 
 // POST /api/doctor/appointments/:id/prescription
-// Create a prescription for a specific appointment
+// Create a prescription for a specific appointment (Updated to match your Prescription model)
 export const createPrescription = async (req, res) => {
   try {
-    const { medications, diagnosis, instructions, notes } = req.body;
+    const { prescribedMedicines, disease, instructions, notes } = req.body;
 
-    if (!medications || !Array.isArray(medications) || medications.length === 0) {
-      return res.status(400).json({ message: 'At least one medication is required' });
+    if (!prescribedMedicines || !Array.isArray(prescribedMedicines) || prescribedMedicines.length === 0) {
+      return res.status(400).json({ message: 'At least one prescribed medicine is required' });
     }
 
-    // Validate medications structure
-    for (const med of medications) {
-      if (!med.name || !med.dosage || !med.frequency) {
+    if (!disease) {
+      return res.status(400).json({ message: 'Disease/diagnosis is required' });
+    }
+
+    // Validate prescribed medicines structure and calculate totals
+    let totalAmount = 0;
+    const processedMedicines = [];
+
+    for (const med of prescribedMedicines) {
+      if (!med.medicineId || !med.medicineName || !med.quantity || !med.price) {
         return res.status(400).json({ 
-          message: 'Each medication must have name, dosage, and frequency' 
+          message: 'Each medicine must have medicineId, medicineName, quantity, and price' 
         });
       }
+
+      // Verify medicine exists in inventory
+      const inventoryItem = await Inventory.findById(med.medicineId);
+      if (!inventoryItem) {
+        return res.status(404).json({ 
+          message: `Medicine ${med.medicineName} not found in inventory` 
+        });
+      }
+
+      // Check availability
+      if (inventoryItem.quantity < med.quantity) {
+        return res.status(400).json({ 
+          message: `Insufficient stock for ${med.medicineName}. Available: ${inventoryItem.quantity}, Requested: ${med.quantity}` 
+        });
+      }
+
+      const total = med.quantity * med.price;
+      processedMedicines.push({
+        medicineId: med.medicineId,
+        medicineName: med.medicineName,
+        quantity: med.quantity,
+        price: med.price,
+        instructions: med.instructions || '',
+        total: total
+      });
+
+      totalAmount += total;
     }
 
     // Get doctor profile
@@ -340,18 +376,26 @@ export const createPrescription = async (req, res) => {
       return res.status(404).json({ message: 'Appointment not found' });
     }
 
-    // Create prescription
+    // Create prescription with your model structure
     const prescription = await Prescription.create({
-      appointment: appointment._id,
       patient: appointment.user._id,
-      doctor: doctor._id,
-      medications,
-      diagnosis: diagnosis || '',
-      instructions: instructions || '',
-      notes: notes || ''
+      doctor: req.user._id, // Reference to User, not Doctor
+      disease: disease.trim(),
+      prescribedMedicines: processedMedicines,
+      totalAmount,
+      status: 'active'
     });
 
-    // Update appointment status to completed if it's confirmed
+    // Generate invoice automatically after prescription creation
+    try {
+      const invoice = await generateInvoiceForPrescription(prescription._id);
+      console.log(`Invoice ${invoice.invoiceNumber} generated for prescription ${prescription._id}`);
+    } catch (invoiceError) {
+      console.error('Failed to generate invoice:', invoiceError.message);
+      // Don't fail the prescription creation if invoice generation fails
+    }
+
+    // Update appointment status to completed
     if (appointment.status === 'confirmed') {
       appointment.status = 'completed';
       await appointment.save();
@@ -360,8 +404,8 @@ export const createPrescription = async (req, res) => {
     // Populate and return prescription
     const populatedPrescription = await Prescription.findById(prescription._id)
       .populate('patient', 'name email phoneNumber')
-      .populate('doctor', 'specialty')
-      .populate('appointment', 'appointmentDate appointmentTime');
+      .populate('doctor', 'name email')
+      .populate('prescribedMedicines.medicineId', 'name category');
 
     res.status(201).json({
       message: 'Prescription created successfully',
@@ -382,9 +426,11 @@ export const getDoctorPrescriptions = async (req, res) => {
       return res.status(404).json({ message: 'Doctor profile not found' });
     }
 
-    const prescriptions = await Prescription.find({ doctor: doctor._id })
+    // Updated to work with your Prescription model structure
+    const prescriptions = await Prescription.find({ doctor: req.user._id })
       .populate('patient', 'name email phoneNumber')
-      .populate('appointment', 'appointmentDate appointmentTime')
+      .populate('doctor', 'name email')
+      .populate('prescribedMedicines.medicineId', 'name category')
       .sort({ createdAt: -1 });
 
     res.json(prescriptions);
@@ -405,11 +451,11 @@ export const getPrescriptionDetails = async (req, res) => {
 
     const prescription = await Prescription.findOne({
       _id: req.params.id,
-      doctor: doctor._id
+      doctor: req.user._id // Updated to use req.user._id since doctor field references User
     })
       .populate('patient', 'name email phoneNumber bloodGroup')
-      .populate('appointment', 'appointmentDate appointmentTime')
-      .populate('doctor', 'specialty');
+      .populate('doctor', 'name email')
+      .populate('prescribedMedicines.medicineId', 'name category price');
 
     if (!prescription) {
       return res.status(404).json({ message: 'Prescription not found' });
@@ -426,7 +472,7 @@ export const getPrescriptionDetails = async (req, res) => {
 // Update a prescription (only if not older than 24 hours)
 export const updatePrescription = async (req, res) => {
   try {
-    const { medications, diagnosis, instructions, notes } = req.body;
+    const { prescribedMedicines, disease, instructions, notes } = req.body;
 
     const doctor = await Doctor.findOne({ user: req.user._id });
     if (!doctor) {
@@ -435,7 +481,7 @@ export const updatePrescription = async (req, res) => {
 
     const prescription = await Prescription.findOne({
       _id: req.params.id,
-      doctor: doctor._id
+      doctor: req.user._id // Updated to use req.user._id
     });
 
     if (!prescription) {
@@ -451,17 +497,24 @@ export const updatePrescription = async (req, res) => {
     }
 
     // Update fields
-    if (medications) prescription.medications = medications;
-    if (diagnosis) prescription.diagnosis = diagnosis;
-    if (instructions) prescription.instructions = instructions;
-    if (notes) prescription.notes = notes;
-
+    if (prescribedMedicines) {
+      // Recalculate total if medicines are updated
+      let newTotalAmount = 0;
+      for (const med of prescribedMedicines) {
+        newTotalAmount += med.total || (med.quantity * med.price);
+      }
+      prescription.prescribedMedicines = prescribedMedicines;
+      prescription.totalAmount = newTotalAmount;
+    }
+    if (disease) prescription.disease = disease;
+    
     await prescription.save();
 
     // Return updated prescription
     const updatedPrescription = await Prescription.findById(prescription._id)
       .populate('patient', 'name email phoneNumber')
-      .populate('appointment', 'appointmentDate appointmentTime');
+      .populate('doctor', 'name email')
+      .populate('prescribedMedicines.medicineId', 'name category');
 
     res.json({
       message: 'Prescription updated successfully',
