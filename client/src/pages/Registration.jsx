@@ -21,6 +21,33 @@ function Registration() {
 
   const roles = ["patient", "doctor", "staff"];
 
+  // Medical specialties from the existing system
+  const specialties = [
+    "General Medicine",
+    "Gastroenterology", 
+    "General Surgery",
+    "Emergency Medicine",
+    "Cardiology",
+    "Gynecology",
+    "Orthopedics",
+    "Neurology",
+    "Physical Therapy",
+    "Pulmonology",
+    "Allergy",
+    "Infectious Disease",
+    "Pediatrics",
+    "Pain Management",
+    "ENT",
+    "Endocrinology",
+    "Psychiatry",
+    "Rheumatology",
+    "Dermatology",
+    "Oncology",
+    "Nutrition",
+    "Urology",
+    "Obstetrics"
+  ];
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -117,15 +144,19 @@ function Registration() {
         </select>
 
         {formData.role === "doctor" && (
-          <input
-            type="text"
+          <select
             name="specialty"
-            placeholder="Medical Specialty"
             value={formData.specialty}
             onChange={handleChange}
             required
             style={{ width: "100%", marginBottom: 10 }}
-          />
+          >
+            {specialties.map(specialty => (
+              <option key={specialty} value={specialty}>
+                {specialty}
+              </option>
+            ))}
+          </select>
         )}
 
         {error && (

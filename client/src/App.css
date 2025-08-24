@@ -37,16 +37,10 @@
 
 /* ========= Design System / Global Variables ========= */
 
-@font-face {
-  font-family: 'PT Serif';
-  src: url('fonts/pt-serif.woff2') format('woff2'),
-       url('fonts/pt-serif.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
+/* Font loading removed - using system fonts instead */
 
 :root {
-  --font-family-pt-serif: 'PT Serif', serif;
+  --font-family-pt-serif: 'Georgia', serif;
   --font-family-inter: 'Inter', sans-serif;
 
   --text-white: #fff;
@@ -208,3 +202,204 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ===== Any Extra App/Vite Demo or Docs Classes ===== */
 /* (keep as is) */
+
+/* ===== Appointment Page Styles ===== */
+.appointment-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.appointment-form {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.appointment-form h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: var(--text-teal);
+  font-family: var(--font-family-pt-serif);
+  font-size: 2.5rem;
+}
+
+.appointment-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text-charcoal);
+}
+
+.appointment-form input,
+.appointment-form textarea,
+.appointment-form select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.appointment-form input:focus,
+.appointment-form textarea:focus,
+.appointment-form select:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 2px rgba(0, 179, 255, 0.2);
+}
+
+.appointment-form button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.appointment-form button[type="submit"] {
+  background-color: var(--primary-blue);
+  color: white;
+}
+
+.appointment-form button[type="submit"]:hover:not(:disabled) {
+  background-color: var(--primary-dark-blue);
+  transform: translateY(-1px);
+}
+
+.appointment-form button[type="button"] {
+  background-color: #6c757d;
+  color: white;
+}
+
+.appointment-form button[type="button"]:hover {
+  background-color: #5a6268;
+}
+
+.appointment-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Time slot grid */
+.time-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.time-slot-item {
+  padding: 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.time-slot-item:hover {
+  border-color: var(--primary-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 179, 255, 0.15);
+}
+
+.time-slot-item.selected {
+  border-color: var(--primary-blue);
+  background-color: #e3f2fd;
+}
+
+.time-slot-item .day-name {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 8px;
+  color: var(--text-charcoal);
+}
+
+.time-slot-item .time-range {
+  font-size: 14px;
+  color: var(--text-gray);
+  margin-bottom: 8px;
+}
+
+.time-slot-item .availability-info {
+  font-size: 12px;
+  color: var(--success-green);
+  font-weight: 500;
+}
+
+.time-slot-item .selected-info {
+  color: var(--primary-blue);
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+/* Success and error messages */
+.message {
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Doctor info card */
+.doctor-info {
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 25px;
+}
+
+.doctor-info h3 {
+  margin: 0 0 15px 0;
+  color: var(--text-charcoal);
+  font-size: 20px;
+}
+
+.doctor-info p {
+  margin: 8px 0;
+  font-size: 16px;
+  color: var(--text-gray);
+}
+
+.doctor-info strong {
+  color: var(--text-charcoal);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .appointment-container {
+    padding: 10px;
+  }
+  
+  .appointment-form {
+    padding: 20px;
+  }
+  
+  .appointment-form h1 {
+    font-size: 2rem;
+  }
+  
+  .time-slot-grid {
+    grid-template-columns: 1fr;
+  }
+}
