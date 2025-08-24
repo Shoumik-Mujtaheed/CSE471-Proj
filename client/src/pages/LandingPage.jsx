@@ -16,14 +16,14 @@ function LandingPage() {
           📝 User Registration
         </button>
         <button onClick={() => navigate("/login")} style={{ padding: '12px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '5px' }}>
-          🔑 User Login (All Users)
+          🔑 User Login 
         </button>
       </div>
       
-      <div style={{ marginTop: '20px', fontSize: '14px', color: '#666' }}>
+      {/* <div style={{ marginTop: '20px', fontSize: '14px', color: '#666' }}>
         <p><strong>Note:</strong> User Login handles Patients, Doctors, and Staff automatically</p>
         <p>Admin Login is separate for system administration</p>
-      </div>
+      </div> */}
     </div>
   );
 }
