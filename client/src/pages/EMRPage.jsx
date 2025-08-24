@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../utils/api';
 
 function EMRPage() {
-  const [_profile, setProfile] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [prescriptions, setPrescriptions] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [medicalHistory, setMedicalHistory] = useState([]);
@@ -26,7 +26,9 @@ function EMRPage() {
   const fetchData = async () => {
     try {
       const token = localStorage.getItem('userToken');
-      
+      const userData = JSON.parse(localStorage.getItem('userData'));
+      const patientId = userData?.id;
+
       // Fetch profile
       const profileRes = await fetch(`${API_BASE_URL}/api/users/profile`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -45,45 +47,39 @@ function EMRPage() {
         setPrescriptions(prescriptionsData.prescriptions || []);
       }
 
-      // Fetch appointments (mock data for now)
-      setAppointments([
-        {
-          id: 1,
-          date: '2024-01-15',
-          time: '10:00 AM',
-          doctor: 'Dr. Smith',
-          specialty: 'Cardiology',
-          status: 'Completed',
-          notes: 'Regular checkup, blood pressure normal'
-        },
-        {
-          id: 2,
-          date: '2024-02-20',
-          time: '2:30 PM',
-          doctor: 'Dr. Johnson',
-          specialty: 'Dermatology',
-          status: 'Scheduled',
-          notes: 'Follow-up for skin condition'
+      // Fetch appointments - Updated to fetch real data
+      try {
+        const appointmentsRes = await fetch(`${API_BASE_URL}/api/appointments/patient/${patientId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (appointmentsRes.ok) {
+          const appointmentsData = await appointmentsRes.json();
+          setAppointments(appointmentsData || []);
+        } else {
+          console.log('Appointments endpoint not available, using empty array');
+          setAppointments([]);
         }
-      ]);
+      } catch (appointmentError) {
+        console.log('Error fetching appointments:', appointmentError);
+        setAppointments([]);
+      }
 
-      // Fetch medical history (mock data for now)
-      setMedicalHistory([
-        {
-          id: 1,
-          date: '2023-12-10',
-          type: 'Blood Test',
-          result: 'Normal',
-          details: 'Complete blood count, all values within normal range'
-        },
-        {
-          id: 2,
-          date: '2023-11-25',
-          type: 'X-Ray',
-          result: 'Normal',
-          details: 'Chest X-ray, no abnormalities detected'
+      // Fetch medical history - Updated to fetch real data
+      try {
+        const medicalHistoryRes = await fetch(`${API_BASE_URL}/api/medical-history/patient/${patientId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (medicalHistoryRes.ok) {
+          const medicalHistoryData = await medicalHistoryRes.json();
+          setMedicalHistory(medicalHistoryData || []);
+        } else {
+          console.log('Medical history endpoint not available, using empty array');
+          setMedicalHistory([]);
         }
-      ]);
+      } catch (medicalHistoryError) {
+        console.log('Error fetching medical history:', medicalHistoryError);
+        setMedicalHistory([]);
+      }
 
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -94,6 +90,7 @@ function EMRPage() {
 
   const handleLogout = () => {
     localStorage.removeItem('userToken');
+    localStorage.removeItem('userData');
     navigate('/');
   };
 
@@ -126,18 +123,36 @@ function EMRPage() {
             }}>
               <h3 style={{ color: '#333', marginBottom: '15px' }}>📊 Recent Activity</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                
+                {/* Recent Prescriptions */}
                 {prescriptions.slice(0, 2).map((prescription, index) => (
-                  <div key={index} style={{
+                  <div key={`prescription-${index}`} style={{
                     padding: '15px',
                     border: '1px solid #eee',
                     borderRadius: '4px',
                     backgroundColor: '#f8f9fa'
                   }}>
-                    <h4 style={{ margin: '0 0 10px 0', color: '#333' }}>💊 {prescription.medicationName}</h4>
-                    <p style={{ margin: '5px 0', color: '#666' }}><strong>Date:</strong> {new Date(prescription.prescribedDate).toLocaleDateString()}</p>
+                    <h4 style={{ margin: '0 0 10px 0', color: '#333' }}>💊 {prescription.disease || 'Prescription'}</h4>
+                    <p style={{ margin: '5px 0', color: '#666' }}><strong>Date:</strong> {new Date(prescription.createdAt).toLocaleDateString()}</p>
                     <p style={{ margin: '5px 0', color: '#666' }}><strong>Doctor:</strong> {prescription.doctor?.name || 'N/A'}</p>
                   </div>
                 ))}
+
+                {/* Recent Appointments */}
+                {appointments.slice(0, 2).map((appointment, index) => (
+                  <div key={`appointment-${index}`} style={{
+                    padding: '15px',
+                    border: '1px solid #eee',
+                    borderRadius: '4px',
+                    backgroundColor: '#e8f5e8'
+                  }}>
+                    <h4 style={{ margin: '0 0 10px 0', color: '#333' }}>📅 Appointment</h4>
+                    <p style={{ margin: '5px 0', color: '#666' }}><strong>Date:</strong> {new Date(appointment.appointmentDate).toLocaleDateString()}</p>
+                    <p style={{ margin: '5px 0', color: '#666' }}><strong>Doctor:</strong> {appointment.doctor?.name || appointment.doctorName || 'N/A'}</p>
+                    <p style={{ margin: '5px 0', color: '#666' }}><strong>Status:</strong> {appointment.status}</p>
+                  </div>
+                ))}
+
               </div>
             </div>
           </div>
@@ -155,21 +170,26 @@ function EMRPage() {
                   padding: '20px',
                   backgroundColor: '#f8f9fa'
                 }}>
-                  <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>{prescription.medicationName}</h3>
+                  <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>{prescription.disease || 'Prescription'}</h3>
                   <p style={{ margin: '5px 0', color: '#666' }}>
-                    <strong>Prescribed:</strong> {new Date(prescription.prescribedDate).toLocaleDateString()}
+                    <strong>Date:</strong> {new Date(prescription.createdAt).toLocaleDateString()}
                   </p>
                   <p style={{ margin: '5px 0', color: '#666' }}>
                     <strong>Doctor:</strong> {prescription.doctor?.name || 'N/A'}
                   </p>
+                  
+                  {/* Display prescribed medicines */}
+                  <div style={{ margin: '10px 0' }}>
+                    <strong>Medicines:</strong>
+                    {prescription.prescribedMedicines?.map((med, medIndex) => (
+                      <div key={medIndex} style={{ marginLeft: '10px', margin: '5px 0', fontSize: '14px' }}>
+                        • {med.medicineName} - {med.quantity}x ({med.instructions})
+                      </div>
+                    ))}
+                  </div>
+
                   <p style={{ margin: '5px 0', color: '#666' }}>
-                    <strong>Dosage:</strong> {prescription.dosage}
-                  </p>
-                  <p style={{ margin: '5px 0', color: '#666' }}>
-                    <strong>Duration:</strong> {prescription.duration}
-                  </p>
-                  <p style={{ margin: '5px 0', color: '#666' }}>
-                    <strong>Instructions:</strong> {prescription.instructions}
+                    <strong>Total Amount:</strong> ${prescription.totalAmount?.toFixed(2) || '0.00'}
                   </p>
                   <p style={{ margin: '5px 0', color: '#666' }}>
                     <strong>Status:</strong> 
@@ -209,23 +229,32 @@ function EMRPage() {
                   backgroundColor: '#f8f9fa'
                 }}>
                   <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>
-                    {new Date(appointment.date).toLocaleDateString()} at {appointment.time}
+                    {new Date(appointment.appointmentDate).toLocaleDateString()} 
+                    {appointment.appointmentTime && ` at ${appointment.appointmentTime}`}
                   </h3>
                   <p style={{ margin: '5px 0', color: '#666' }}>
-                    <strong>Doctor:</strong> {appointment.doctor}
+                    <strong>Doctor:</strong> {appointment.doctor?.name || appointment.doctorName || 'N/A'}
                   </p>
-                  <p style={{ margin: '5px 0', color: '#666' }}>
-                    <strong>Specialty:</strong> {appointment.specialty}
-                  </p>
+                  {appointment.doctor?.specialty && (
+                    <p style={{ margin: '5px 0', color: '#666' }}>
+                      <strong>Specialty:</strong> {appointment.doctor.specialty}
+                    </p>
+                  )}
                   <p style={{ margin: '5px 0', color: '#666' }}>
                     <strong>Status:</strong> 
                     <span style={{ 
-                      color: appointment.status === 'Completed' ? '#28a745' : 
-                             appointment.status === 'Scheduled' ? '#007bff' : '#ffc107'
+                      color: appointment.status === 'completed' ? '#28a745' : 
+                             appointment.status === 'confirmed' ? '#007bff' : 
+                             appointment.status === 'pending' ? '#ffc107' : '#dc3545'
                     }}>
                       {appointment.status}
                     </span>
                   </p>
+                  {appointment.reason && (
+                    <p style={{ margin: '5px 0', color: '#666' }}>
+                      <strong>Reason:</strong> {appointment.reason}
+                    </p>
+                  )}
                   {appointment.notes && (
                     <p style={{ margin: '5px 0', color: '#666' }}>
                       <strong>Notes:</strong> {appointment.notes}
@@ -233,6 +262,16 @@ function EMRPage() {
                   )}
                 </div>
               ))}
+              {appointments.length === 0 && (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '40px', 
+                  color: '#666',
+                  gridColumn: '1 / -1'
+                }}>
+                  No appointments found
+                </div>
+              )}
             </div>
           </div>
         );
@@ -249,23 +288,49 @@ function EMRPage() {
                   padding: '20px',
                   backgroundColor: '#f8f9fa'
                 }}>
-                  <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>{test.type}</h3>
+                  <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>{test.testType || test.type}</h3>
                   <p style={{ margin: '5px 0', color: '#666' }}>
-                    <strong>Date:</strong> {new Date(test.date).toLocaleDateString()}
+                    <strong>Date:</strong> {new Date(test.testDate || test.date).toLocaleDateString()}
                   </p>
                   <p style={{ margin: '5px 0', color: '#666' }}>
                     <strong>Result:</strong> 
                     <span style={{ 
-                      color: test.result === 'Normal' ? '#28a745' : '#ffc107'
+                      color: test.result === 'Normal' || test.result === 'normal' ? '#28a745' : 
+                             test.result === 'Abnormal' || test.result === 'abnormal' ? '#dc3545' : '#ffc107'
                     }}>
                       {test.result}
                     </span>
                   </p>
+                  {test.doctor && (
+                    <p style={{ margin: '5px 0', color: '#666' }}>
+                      <strong>Ordered by:</strong> {test.doctor.name || test.doctorName}
+                    </p>
+                  )}
                   <p style={{ margin: '5px 0', color: '#666' }}>
-                    <strong>Details:</strong> {test.details}
+                    <strong>Details:</strong> {test.details || test.description || 'No additional details'}
                   </p>
+                  {test.attachments && test.attachments.length > 0 && (
+                    <div style={{ margin: '10px 0' }}>
+                      <strong>Files:</strong>
+                      {test.attachments.map((file, fileIndex) => (
+                        <div key={fileIndex} style={{ marginLeft: '10px', fontSize: '14px' }}>
+                          📎 {file.filename || file.name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
+              {medicalHistory.length === 0 && (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '40px', 
+                  color: '#666',
+                  gridColumn: '1 / -1'
+                }}>
+                  No medical history found
+                </div>
+              )}
             </div>
           </div>
         );
