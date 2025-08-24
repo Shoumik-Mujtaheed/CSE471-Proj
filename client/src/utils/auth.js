@@ -21,12 +21,18 @@ export const logoutUser = () => {
 export const getUserRole = () => {
   try {
     const userData = localStorage.getItem('userData');
+    console.log("getUserRole - userData from localStorage:", userData); // DEBUG
+    
     if (userData) {
       const user = JSON.parse(userData);
+      console.log("getUserRole - parsed user:", user); // DEBUG
+      console.log("getUserRole - user.role:", user.role); // DEBUG
       return user.role;
     }
+    console.log("getUserRole - no userData found"); // DEBUG
     return null;
-  } catch {
+  } catch (error) {
+    console.error("getUserRole - parsing error:", error); // DEBUG
     return null;
   }
 };
