@@ -5,6 +5,7 @@ import {
   // Authentication
   adminLogin,
   getAdminProfile,
+  getPatients,
   // Doctor Management
   listDoctors,
   getDoctor,
@@ -38,6 +39,9 @@ router.use(adminAuthMiddleware); // Apply admin auth to all routes below
 
 // Admin profile
 router.get('/profile', getAdminProfile);
+
+// User (patients profiles)
+router.get('/patients', getPatients);
 
 // Doctor management routes
 router.get('/doctors', listDoctors);

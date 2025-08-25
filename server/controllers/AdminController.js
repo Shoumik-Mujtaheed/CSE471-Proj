@@ -53,6 +53,25 @@ export const adminLogin = async (req, res) => {
   }
 };
 
+
+// Add this function to your AdminController.js
+
+export const getPatients = async (req, res) => {
+  try {
+    // Fetch all users with role 'patient'
+    const patients = await User.find({ role: 'patient' })
+      .select('name email phoneNumber bloodGroup createdAt')
+      .sort({ createdAt: -1 });
+
+    res.json(patients);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+
 // GET /api/admin/profile
 export const getAdminProfile = async (req, res) => {
   try {
@@ -216,9 +235,6 @@ export const setStaffWorkingHours = async (req, res) => {
 };
 
 /* ============== SLOT REQUESTS MANAGEMENT ============== */
-
-
-
 
 
 
