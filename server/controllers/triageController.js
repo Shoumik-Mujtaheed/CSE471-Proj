@@ -5,12 +5,11 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { callGemini } from '../utils/geminiApi.js';
-import dotenv from 'dotenv';
 
-dotenv.config();
-if (!process.env.GEMINI_API_KEY) {
-  process.env.GEMINI_API_KEY = 'AIzaSyBvtrWPrXhKPsuxir_axjt6unVY7_1lVJY';
-}
+// // Fallback API key if not in environment
+// if (!process.env.GEMINI_API_KEY) {
+//   process.env.GEMINI_API_KEY = 'AIzaSyBvtrWPrXhKPsuxir_axjt6unVY7_1lVJY';
+// }
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,7 +30,6 @@ const SYMPTOMS = loadConfig('symptoms.json');
 const SYNONYMS = loadConfig('synonyms.json');
 const SYMPTOM_WEIGHTS = loadConfig('symptom_weights.json');
 const SYMPTOM_SPECIALTY_MATRIX = loadConfig('symptom_specialty_matrix.json');
-const RED_FLAG_COMBOS = loadConfig('red_flag_combos.json');
 
 const handleUnknownSymptoms = async (symptoms) => {
   const unknownSymptoms = symptoms.filter(symptom => 
@@ -103,18 +101,7 @@ export const searchBySymptoms = async (req, res) => {
       });
     });
 
-    // Apply red flag combo boosts
-    Object.values(RED_FLAG_COMBOS).forEach(combo => {
-      const hasCombo = combo.symptoms.every(symptom => 
-        normalizedSymptoms.includes(symptom)
-      );
-      
-      if (hasCombo) {
-        Object.entries(combo.boost).forEach(([specialty, boost]) => {
-          specialtyScores[specialty] = (specialtyScores[specialty] || 0) + boost;
-        });
-      }
-    });
+
 
     // Rank specialties (threshold: 0.35)
     const rankedSpecialties = Object.entries(specialtyScores)
