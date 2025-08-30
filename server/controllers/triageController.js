@@ -4,6 +4,13 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { callGemini } from '../utils/geminiApi.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
+if (!process.env.GEMINI_API_KEY) {
+  process.env.GEMINI_API_KEY = 'AIzaSyBvtrWPrXhKPsuxir_axjt6unVY7_1lVJY';
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,6 +32,22 @@ const SYNONYMS = loadConfig('synonyms.json');
 const SYMPTOM_WEIGHTS = loadConfig('symptom_weights.json');
 const SYMPTOM_SPECIALTY_MATRIX = loadConfig('symptom_specialty_matrix.json');
 const RED_FLAG_COMBOS = loadConfig('red_flag_combos.json');
+
+const handleUnknownSymptoms = async (symptoms) => {
+  const unknownSymptoms = symptoms.filter(symptom => 
+    !SYMPTOMS.map(s => s.toLowerCase()).includes(symptom.toLowerCase())
+  );
+  
+  if (unknownSymptoms.length === 0) return null;
+  
+  const prompt = `What medical specialty handles these symptoms: ${unknownSymptoms.join(', ')}? Answer with just the specialty name.`;
+  const geminiResult = await callGemini(prompt);
+  
+  return geminiResult ? {
+    specialty: geminiResult,
+    symptoms: unknownSymptoms
+  } : null;
+};
 
 // GET /api/triage/symptoms
 // Get symptom suggestions (max 5) based on prefix
@@ -64,6 +87,9 @@ export const searchBySymptoms = async (req, res) => {
       return SYNONYMS[normalized] || normalized;
     });
 
+    // Check for unknown symptoms and get Gemini suggestion
+    const unknownSymptomResult = await handleUnknownSymptoms(normalizedSymptoms);
+
     // Calculate specialty scores
     const specialtyScores = {};
     
@@ -96,6 +122,11 @@ export const searchBySymptoms = async (req, res) => {
       .sort(([_, a], [__, b]) => b - a)
       .slice(0, 2); // Top 2 specialties
 
+    // Use Gemini result if unknown symptoms found and rule-based confidence is low
+    if (unknownSymptomResult && (rankedSpecialties.length === 0 || rankedSpecialties[0][1] < 0.4)) {
+      rankedSpecialties.unshift([unknownSymptomResult.specialty, 0.8]);
+    }
+
     // Fallback to General Medicine if no specialty passes threshold
     if (rankedSpecialties.length === 0) {
       rankedSpecialties.push(['General Medicine', 0.5]);
@@ -105,20 +136,16 @@ export const searchBySymptoms = async (req, res) => {
     const topSpecialty = rankedSpecialties[0][0];
     const recommendedDoctors = await getAvailableDoctors(topSpecialty, date);
 
-    // Log for tuning
-    console.log('Triage Search:', {
-      symptoms: normalizedSymptoms,
-      specialtyScores,
-      topSpecialty,
-      doctorsFound: recommendedDoctors.length
-    });
-
     res.json({
       selectedSymptoms: normalizedSymptoms,
       recommendedSpecialty: topSpecialty,
       alternativeSpecialty: rankedSpecialties[1] ? rankedSpecialties[1][0] : null,
       specialtyScores: rankedSpecialties,
-      recommendedDoctors
+      recommendedDoctors,
+      geminiEnhancement: unknownSymptomResult ? {
+        unknownSymptoms: unknownSymptomResult.symptoms,
+        aiSpecialty: unknownSymptomResult.specialty
+      } : null
     });
 
   } catch (error) {
