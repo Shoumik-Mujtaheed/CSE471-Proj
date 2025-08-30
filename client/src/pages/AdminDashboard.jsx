@@ -10,6 +10,7 @@ function AdminDashboard() {
   const [leaveRequests, setLeaveRequests] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [staff, setStaff] = useState([]);
+  const [patients, setPatients] = useState([]); // Added patients state
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('pending-requests');
   
@@ -27,6 +28,34 @@ function AdminDashboard() {
   const fetchData = async () => {
     try {
       const token = localStorage.getItem('adminToken');
+      
+      // Fetch patients - Added patients API call
+      try {
+        const patientsRes = await fetch(`${API_BASE_URL}/api/admin/patients`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (patientsRes.ok) {
+          const patientsData = await patientsRes.json();
+          setPatients(patientsData || []);
+        }
+      } catch (patientsError) {
+        console.log('Error fetching patients:', patientsError);
+        // If the endpoint doesn't exist, you can also fetch from users endpoint
+        try {
+          const usersRes = await fetch(`${API_BASE_URL}/api/users`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (usersRes.ok) {
+            const usersData = await usersRes.json();
+            // Filter only patients from users
+            const patientUsers = usersData.filter(user => user.role === 'patient');
+            setPatients(patientUsers);
+          }
+        } catch (usersError) {
+          console.log('Error fetching users for patients:', usersError);
+          setPatients([]);
+        }
+      }
       
       // Fetch time slots
       const slotRes = await fetch(`${API_BASE_URL}/api/time-slots`, {
@@ -128,8 +157,6 @@ function AdminDashboard() {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     return days[dayNumber];
   };
-
-
 
   // Leave Request Functions
   const approveLeaveRequest = async (id) => {
@@ -500,6 +527,53 @@ function AdminDashboard() {
           </div>
         );
       
+      case 'patients':
+        return (
+          <div>
+            <h2 style={{ color: '#007bff', marginBottom: '10px' }}>All Patients</h2>
+            <p style={{ color: '#666', marginBottom: '20px' }}>View all registered patients in the system</p>
+            
+            <div style={{ 
+              backgroundColor: 'white', 
+              borderRadius: '8px', 
+              padding: '20px',
+              border: '1px solid #ddd'
+            }}>
+              {patients.map((patient, index) => (
+                <div key={index} style={{
+                  padding: '15px 0',
+                  borderBottom: index < patients.length - 1 ? '1px solid #eee' : 'none'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <h3 style={{ margin: '0 0 5px 0', color: '#333' }}>{patient.name || patient.user?.name || 'Unknown'}</h3>
+                      <p style={{ margin: '2px 0', color: '#666' }}>
+                        <strong>Email:</strong> {patient.email || patient.user?.email || 'N/A'}
+                      </p>
+                      <p style={{ margin: '2px 0', color: '#666' }}>
+                        <strong>Phone:</strong> {patient.phoneNumber || patient.user?.phoneNumber || 'N/A'}
+                      </p>
+                      {patient.bloodGroup && (
+                        <p style={{ margin: '2px 0', color: '#666' }}>
+                          <strong>Blood Group:</strong> {patient.bloodGroup}
+                        </p>
+                      )}
+                    </div>
+                    <div style={{ color: '#999', fontSize: '14px' }}>
+                      Registered: {new Date(patient.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {patients.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+                  No patients registered
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      
       case 'doctors':
         return (
           <div>
@@ -658,6 +732,14 @@ function AdminDashboard() {
                 Inventory
               </button>
               <button
+                onClick={() => setActiveTab('patients')}
+                style={{ background: 'none', border: 'none', color: '#333', cursor: 'pointer', padding: '8px 12px', borderRadius: '4px' }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#e9ecef'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+              >
+                👤 Patient
+              </button>
+              <button
                 onClick={() => setActiveTab('doctors')}
                 style={{ background: 'none', border: 'none', color: '#333', cursor: 'pointer', padding: '8px 12px', borderRadius: '4px' }}
                 onMouseEnter={(e) => e.target.style.backgroundColor = '#e9ecef'}
@@ -692,13 +774,26 @@ function AdminDashboard() {
           </div>
         </nav>
 
-        {/* Quick Stats */}
+        {/* Quick Stats - Updated with Patients widget first */}
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-          gap: '20px', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', // Reduced from 200px to 180px to fit 5 widgets
+          gap: '15px', // Reduced from 20px to 15px 
           marginBottom: '30px' 
         }}>
+          {/* Patients Widget - Added first */}
+          <div style={{ 
+            backgroundColor: '#fff3e0', 
+            padding: '20px', 
+            borderRadius: '8px', 
+            textAlign: 'center',
+            border: '1px solid #ffcc02'
+          }}>
+            <h3 style={{ margin: '0 0 10px 0', color: '#f57c00' }}>👥 Patients</h3>
+            <p style={{ fontSize: '24px', fontWeight: 'bold', margin: '0', color: '#f57c00' }}>{patients.length}</p>
+          </div>
+
+          {/* Doctors Widget */}
           <div style={{ 
             backgroundColor: '#e3f2fd', 
             padding: '20px', 
@@ -709,6 +804,8 @@ function AdminDashboard() {
             <h3 style={{ margin: '0 0 10px 0', color: '#1976d2' }}>👨‍⚕️ Doctors</h3>
             <p style={{ fontSize: '24px', fontWeight: 'bold', margin: '0', color: '#1976d2' }}>{doctors.length}</p>
           </div>
+
+          {/* Staff Widget */}
           <div style={{ 
             backgroundColor: '#e8f5e8', 
             padding: '20px', 
@@ -719,6 +816,8 @@ function AdminDashboard() {
             <h3 style={{ margin: '0 0 10px 0', color: '#2e7d32' }}>👥 Staff</h3>
             <p style={{ fontSize: '24px', fontWeight: 'bold', margin: '0', color: '#2e7d32' }}>{staff.length}</p>
           </div>
+
+          {/* Time Slots Widget */}
           <div style={{ 
             backgroundColor: '#f3e5f5', 
             padding: '20px', 
@@ -729,6 +828,8 @@ function AdminDashboard() {
             <h3 style={{ margin: '0 0 10px 0', color: '#6f42c1' }}>⏰ Time Slots</h3>
             <p style={{ fontSize: '24px', fontWeight: 'bold', margin: '0', color: '#6f42c1' }}>{timeSlots.length || 0}</p>
           </div>
+
+          {/* Leave Requests Widget */}
           <div style={{ 
             backgroundColor: '#fce4ec', 
             padding: '20px', 
@@ -741,7 +842,7 @@ function AdminDashboard() {
           </div>
         </div>
 
-        {/* Tab Navigation */}
+        {/* Tab Navigation - Updated with Patients tab */}
         <div style={{ 
           display: 'flex', 
           gap: '10px', 
@@ -790,6 +891,20 @@ function AdminDashboard() {
             }}
           >
             Leave Requests
+          </button>
+          <button
+            onClick={() => setActiveTab('patients')}
+            style={{
+              padding: '12px 24px',
+              backgroundColor: activeTab === 'patients' ? '#007bff' : 'white',
+              color: activeTab === 'patients' ? 'white' : '#333',
+              border: '1px solid #ddd',
+              borderRadius: '5px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            Patients
           </button>
           <button
             onClick={() => setActiveTab('doctors')}
