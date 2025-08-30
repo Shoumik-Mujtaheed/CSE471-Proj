@@ -1,0 +1,72 @@
+{
+  "chest_pain_shortness_of_breath": {
+    "symptoms": ["chest pain", "shortness of breath"],
+    "boost": {
+      "Cardiology": 0.3,
+      "Emergency Medicine": 0.2
+    }
+  },
+  "chest_pain_difficulty_breathing": {
+    "symptoms": ["chest pain", "difficulty breathing"],
+    "boost": {
+      "Cardiology": 0.3,
+      "Emergency Medicine": 0.2
+    }
+  },
+  "abdominal_pain_vomiting": {
+    "symptoms": ["abdominal pain", "vomiting"],
+    "boost": {
+      "General Surgery": 0.2,
+      "Emergency Medicine": 0.2
+    }
+  },
+  "headache_vomiting": {
+    "symptoms": ["headache", "vomiting"],
+    "boost": {
+      "Neurology": 0.2,
+      "Emergency Medicine": 0.2
+    }
+  },
+  "fever_rash": {
+    "symptoms": ["fever", "rash"],
+    "boost": {
+      "Infectious Disease": 0.3,
+      "Emergency Medicine": 0.2
+    }
+  },
+  "fever_cough": {
+    "symptoms": ["fever", "cough"],
+    "boost": {
+      "Pulmonology": 0.2,
+      "Infectious Disease": 0.2
+    }
+  },
+  "dizziness_nausea": {
+    "symptoms": ["dizziness", "nausea"],
+    "boost": {
+      "Neurology": 0.2,
+      "ENT": 0.2
+    }
+  },
+  "joint_pain_swelling": {
+    "symptoms": ["joint pain", "swelling"],
+    "boost": {
+      "Rheumatology": 0.3,
+      "Orthopedics": 0.2
+    }
+  },
+  "vision_problems_headache": {
+    "symptoms": ["vision problems", "headache"],
+    "boost": {
+      "Ophthalmology": 0.2,
+      "Neurology": 0.2
+    }
+  },
+  "urinary_problems_fever": {
+    "symptoms": ["urinary problems", "fever"],
+    "boost": {
+      "Urology": 0.2,
+      "Emergency Medicine": 0.2
+    }
+  }
+}

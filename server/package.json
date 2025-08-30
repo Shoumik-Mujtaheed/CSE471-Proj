@@ -1,12 +1,17 @@
 {
-  "name": "server",
+  "name": "mediCore-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "mediCore Backend API Server",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "seed:inventory": "node scripts/seedInventory.js",
+    "create:admin": "node scripts/createAdminSimple.js",
+    "create:admin:interactive": "node scripts/createAdminForce.js",
+    "init:time-slots": "node scripts/initializeTimeSlots.js"
   },
   "keywords": [],
   "author": "",

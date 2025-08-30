@@ -1,10 +1,16 @@
 import React from "react";
-import "../styles/components/Footer.css"; // New CSS for footer-specific styling
 
 function Footer() {
   return (
-    <footer className="footer-main">
-      &copy; {new Date().getFullYear()} Hospital Management System
+    <footer style={{
+      backgroundColor: '#f8f9fa',
+      color: '#6c757d',
+      padding: '1rem',
+      textAlign: 'center',
+      borderTop: '1px solid #dee2e6',
+      marginTop: 'auto'
+    }}>
+      &copy; {new Date().getFullYear()} MediCore
     </footer>
   );
 }

@@ -1,12 +1,15 @@
 import React from "react";
-import "../styles/components/Header.css"; // New CSS for header-specific styling
 
 function Header() {
   return (
-    <header className="header-main">
-      {/* Your logo, nav, etc. here */}
-      <h1 className="header-title">Hospital Management System</h1>
-      {/* ...nav, user controls, etc. */}
+    <header style={{
+      backgroundColor: '#007bff',
+      color: 'white',
+      padding: '1rem',
+      textAlign: 'center',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+    }}>
+      <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold' }}>MediCore</h1>
     </header>
   );
 }

@@ -41,7 +41,7 @@ function BulkUploadModal({ open, onClose, onSuccess }) {
   return (
     <div className="modal-bg">
       <div className="modal">
-        <h2>Bulk Upload Medicines (CSV)</h2>
+        <h2>Bulk Upload Medicines (CSV) - mediCore</h2>
         <form onSubmit={handleUpload}>
           <input type="file" accept=".csv" ref={fileRef} />
           <button type="submit" disabled={uploading} style={{ marginLeft: 12 }}>

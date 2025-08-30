@@ -7,17 +7,19 @@ import Admin from './models/Admin.js';
 
 dotenv.config();
 
+
+
 // Admin information
 const adminInfo = {
-  name: 'admin1',
-  email: 'admin1@gmail.com',
-  password: 'admin1sho'
+  name: 'admin2',
+  email: 'admin2@gmail.com',
+  password: 'admin2pass'
 };
 
 // Main function
 async function createAdmin() {
   try {
-    await mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+    await mongoose.connect(process.env.MONGODB_URI);
 
     // Check if admin with same email already exists
     const exists = await Admin.findOne({ email: adminInfo.email });
@@ -26,10 +28,7 @@ async function createAdmin() {
       process.exit(0);
     }
 
-    // Hash the password
-    //const hashed = await bcrypt.hash(adminInfo.password, 10);
-
-    // Create the admin
+    // Create the admin (password will be auto-hashed by the model)
     const newAdmin = new Admin({
       name: adminInfo.name,
       email: adminInfo.email,

@@ -9,8 +9,9 @@ function Registration() {
     email: "",
     password: "",
     phoneNumber: "",
-    role: "patient", // default role
-    bloodGroup: "A+"
+    role: "patient",
+    bloodGroup: "A+",
+    specialty: "General Medicine"
   });
   const [error, setError] = useState("");
 
@@ -19,6 +20,33 @@ function Registration() {
   ];
 
   const roles = ["patient", "doctor", "staff"];
+
+  // Medical specialties from the existing system
+  const specialties = [
+    "General Medicine",
+    "Gastroenterology", 
+    "General Surgery",
+    "Emergency Medicine",
+    "Cardiology",
+    "Gynecology",
+    "Orthopedics",
+    "Neurology",
+    "Physical Therapy",
+    "Pulmonology",
+    "Allergy",
+    "Infectious Disease",
+    "Pediatrics",
+    "Pain Management",
+    "ENT",
+    "Endocrinology",
+    "Psychiatry",
+    "Rheumatology",
+    "Dermatology",
+    "Oncology",
+    "Nutrition",
+    "Urology",
+    "Obstetrics"
+  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -32,7 +60,7 @@ function Registration() {
     e.preventDefault();
     setError("");
     try {
-      const res = await fetch("/api/users/register", {
+      const res = await fetch("http://localhost:5000/api/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
@@ -41,9 +69,8 @@ function Registration() {
 
       if (!res.ok) return setError(data.message || "Registration failed");
 
-      // Store token & redirect
       localStorage.setItem("userToken", data.token);
-      navigate("/home");
+      navigate("/login");
     } catch (err) {
       setError("Network error");
     }
@@ -51,7 +78,7 @@ function Registration() {
 
   return (
     <div className="centered">
-      <h1>User Registration</h1>
+      <h1>User Registration - mediCore</h1>
       <form onSubmit={handleSubmit} style={{ maxWidth: 350 }}>
         <input
           type="text"
@@ -97,27 +124,88 @@ function Registration() {
           style={{ width: "100%", marginBottom: 10 }}
           required
         >
-          {roles.map(r => (
-            <option key={r} value={r}>{r}</option>
+          {roles.map(role => (
+            <option key={role} value={role}>
+              {role.charAt(0).toUpperCase() + role.slice(1)}
+            </option>
           ))}
         </select>
-        {formData.role === "patient" && (
+
+        <select
+          name="bloodGroup"
+          value={formData.bloodGroup}
+          onChange={handleChange}
+          style={{ width: "100%", marginBottom: 10 }}
+          required
+        >
+          {bloodGroups.map(bg => (
+            <option key={bg} value={bg}>{bg}</option>
+          ))}
+        </select>
+
+        {formData.role === "doctor" && (
           <select
-            name="bloodGroup"
-            value={formData.bloodGroup}
+            name="specialty"
+            value={formData.specialty}
             onChange={handleChange}
-            style={{ width: "100%", marginBottom: 10 }}
             required
+            style={{ width: "100%", marginBottom: 10 }}
           >
-            {bloodGroups.map(bg => (
-              <option key={bg} value={bg}>{bg}</option>
+            {specialties.map(specialty => (
+              <option key={specialty} value={specialty}>
+                {specialty}
+              </option>
             ))}
           </select>
         )}
-        <button type="submit" style={{ width: "100%" }}>
+
+        {error && (
+          <div style={{ 
+            color: "red", 
+            marginBottom: 10, 
+            textAlign: "center",
+            padding: "8px",
+            backgroundColor: "#ffe6e6",
+            borderRadius: "4px"
+          }}>
+            {error}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          style={{
+            width: "100%",
+            padding: "12px",
+            backgroundColor: "#007bff",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            fontSize: "16px",
+            cursor: "pointer"
+          }}
+        >
           Register
         </button>
-        {error && <div style={{ color: "red", marginTop: 10 }}>{error}</div>}
+
+        <div style={{ marginTop: "20px", textAlign: "center" }}>
+          <p style={{ color: "#666", marginBottom: "10px" }}>
+            Already have an account?
+          </p>
+          <button
+            onClick={() => navigate("/login")}
+            style={{
+              padding: "8px 16px",
+              backgroundColor: "transparent",
+              color: "#007bff",
+              border: "1px solid #007bff",
+              borderRadius: "4px",
+              cursor: "pointer"
+            }}
+          >
+            Login Now
+          </button>
+        </div>
       </form>
     </div>
   );

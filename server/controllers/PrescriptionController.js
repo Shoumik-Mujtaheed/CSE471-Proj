@@ -98,3 +98,152 @@ export const getAllPrescriptions = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// Get prescriptions by patient ID
+export const getPrescriptionsByPatient = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    
+    const prescriptions = await Prescription.find({ patient: patientId })
+      .populate('patient', 'name email phoneNumber')
+      .populate('doctor', 'name email')
+      .populate('prescribedMedicines.medicineId', 'name price quantity')
+      .sort({ createdAt: -1 });
+    
+    res.json({ prescriptions });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Get prescriptions by doctor
+export const getMyPrescriptions = async (req, res) => {
+  try {
+    const prescriptions = await Prescription.find({ doctor: req.user.doctorId })
+      .populate('patient', 'name email phoneNumber')
+      .populate('prescribedMedicines.medicineId', 'name price quantity')
+      .sort({ createdAt: -1 });
+    res.json({
+      success: true,
+      prescriptions
+    });
+  } catch (err) {
+    res.status(500).json({ 
+      success: false,
+      message: err.message 
+    });
+  }
+};
+
+// Get prescription by ID
+export const getPrescriptionById = async (req, res) => {
+  try {
+    const prescription = await Prescription.findOne({
+      _id: req.params.id,
+      doctor: req.user.doctorId
+    })
+      .populate('patient', 'name email phoneNumber')
+      .populate('prescribedMedicines.medicineId', 'name price quantity');
+    
+    if (!prescription) {
+      return res.status(404).json({
+        success: false,
+        message: 'Prescription not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      prescription
+    });
+  } catch (err) {
+    res.status(500).json({ 
+      success: false,
+      message: err.message 
+    });
+  }
+};
+
+// Update prescription
+export const updatePrescription = async (req, res) => {
+  try {
+    const prescription = await Prescription.findOneAndUpdate(
+      { _id: req.params.id, doctor: req.user.doctorId },
+      req.body,
+      { new: true }
+    )
+      .populate('patient', 'name email phoneNumber')
+      .populate('prescribedMedicines.medicineId', 'name price quantity');
+    
+    if (!prescription) {
+      return res.status(404).json({
+        success: false,
+        message: 'Prescription not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Prescription updated successfully',
+      prescription
+    });
+  } catch (err) {
+    res.status(500).json({ 
+      success: false,
+      message: err.message 
+    });
+  }
+};
+
+// Cancel prescription
+export const cancelPrescription = async (req, res) => {
+  try {
+    const prescription = await Prescription.findOne({
+      _id: req.params.id,
+      doctor: req.user.doctorId
+    });
+    
+    if (!prescription) {
+      return res.status(404).json({
+        success: false,
+        message: 'Prescription not found'
+      });
+    }
+    
+    // Update status or delete based on your business logic
+    prescription.status = 'cancelled';
+    await prescription.save();
+    
+    res.json({
+      success: true,
+      message: 'Prescription cancelled successfully'
+    });
+  } catch (err) {
+    res.status(500).json({ 
+      success: false,
+      message: err.message 
+    });
+  }
+};
+
+// Get patient prescription history
+export const getPatientPrescriptionHistory = async (req, res) => {
+  try {
+    const prescriptions = await Prescription.find({ 
+      patient: req.params.id,
+      doctor: req.user.doctorId 
+    })
+      .populate('prescribedMedicines.medicineId', 'name price quantity')
+      .sort({ createdAt: -1 });
+    
+    res.json({
+      success: true,
+      prescriptions
+    });
+  } catch (err) {
+    res.status(500).json({ 
+      success: false,
+      message: err.message 
+    });
+  }
+};

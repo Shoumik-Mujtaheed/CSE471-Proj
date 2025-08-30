@@ -1,5 +1,6 @@
 import Invoice from '../models/Invoice.js';
 import Inventory from '../models/Inventory.js';
+import Prescription from '../models/Prescription.js';
 
 // Generate unique invoice number
 const generateInvoiceNumber = () => {

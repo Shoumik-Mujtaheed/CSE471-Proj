@@ -77,7 +77,7 @@ function InventoryPage() {
 
   return (
     <div className="inventory-page">
-      <h1>Inventory</h1>
+      <h1>Inventory - mediCore</h1>
       <button onClick={() => setEditMode((v) => !v)}>
         {editMode ? "Exit Edit Mode" : "Edit"}
       </button>

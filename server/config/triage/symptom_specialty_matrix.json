@@ -1,0 +1,267 @@
+{
+  "abdominal pain": {
+    "General Medicine": 0.8,
+    "Gastroenterology": 1.0,
+    "General Surgery": 0.9,
+    "Emergency Medicine": 0.7,
+    "Cardiology": 0.3,
+    "Gynecology": 0.6
+  },
+  "back pain": {
+    "General Medicine": 0.8,
+    "Orthopedics": 1.0,
+    "Neurology": 0.7,
+    "Physical Therapy": 0.9,
+    "Emergency Medicine": 0.6
+  },
+  "chest pain": {
+    "Cardiology": 1.0,
+    "Emergency Medicine": 0.9,
+    "Pulmonology": 0.7,
+    "General Medicine": 0.6,
+    "Gastroenterology": 0.4
+  },
+  "cough": {
+    "Pulmonology": 1.0,
+    "General Medicine": 0.8,
+    "Emergency Medicine": 0.6,
+    "Cardiology": 0.3
+  },
+  "dry cough": {
+    "Pulmonology": 1.0,
+    "General Medicine": 0.8,
+    "Allergy": 0.7
+  },
+  "cough with phlegm": {
+    "Pulmonology": 1.0,
+    "General Medicine": 0.8,
+    "Emergency Medicine": 0.6
+  },
+  "shortness of breath": {
+    "Pulmonology": 1.0,
+    "Cardiology": 0.9,
+    "Emergency Medicine": 0.8,
+    "General Medicine": 0.6
+  },
+  "difficulty breathing": {
+    "Pulmonology": 1.0,
+    "Emergency Medicine": 0.9,
+    "Cardiology": 0.7,
+    "General Medicine": 0.6
+  },
+  "fever": {
+    "General Medicine": 0.9,
+    "Emergency Medicine": 0.8,
+    "Infectious Disease": 1.0,
+    "Pediatrics": 0.8
+  },
+  "headache": {
+    "Neurology": 1.0,
+    "General Medicine": 0.8,
+    "Emergency Medicine": 0.6
+  },
+  "migraine": {
+    "Neurology": 1.0,
+    "General Medicine": 0.7,
+    "Pain Management": 0.9
+  },
+  "dizziness": {
+    "Neurology": 0.9,
+    "General Medicine": 0.7,
+    "Cardiology": 0.6,
+    "ENT": 0.7
+  },
+  "nausea": {
+    "General Medicine": 0.8,
+    "Gastroenterology": 0.9,
+    "Emergency Medicine": 0.6
+  },
+  "vomiting": {
+    "General Medicine": 0.8,
+    "Gastroenterology": 0.9,
+    "Emergency Medicine": 0.7,
+    "Pediatrics": 0.8
+  },
+  "diarrhea": {
+    "Gastroenterology": 1.0,
+    "General Medicine": 0.8,
+    "Emergency Medicine": 0.6,
+    "Pediatrics": 0.8
+  },
+  "constipation": {
+    "Gastroenterology": 0.9,
+    "General Medicine": 0.7
+  },
+  "fatigue": {
+    "General Medicine": 0.8,
+    "Endocrinology": 0.7,
+    "Cardiology": 0.5,
+    "Psychiatry": 0.6
+  },
+  "weakness": {
+    "Neurology": 0.9,
+    "General Medicine": 0.7,
+    "Cardiology": 0.6
+  },
+  "joint pain": {
+    "Orthopedics": 1.0,
+    "Rheumatology": 1.0,
+    "General Medicine": 0.7
+  },
+  "swelling": {
+    "General Medicine": 0.7,
+    "Orthopedics": 0.8,
+    "Cardiology": 0.5,
+    "Emergency Medicine": 0.6
+  },
+  "rash": {
+    "Dermatology": 1.0,
+    "General Medicine": 0.7,
+    "Allergy": 0.8
+  },
+  "itching": {
+    "Dermatology": 1.0,
+    "Allergy": 0.9,
+    "General Medicine": 0.6
+  },
+  "burning sensation": {
+    "Dermatology": 0.8,
+    "General Medicine": 0.7,
+    "Neurology": 0.6
+  },
+  "numbness": {
+    "Neurology": 1.0,
+    "General Medicine": 0.6,
+    "Orthopedics": 0.5
+  },
+  "tingling": {
+    "Neurology": 1.0,
+    "General Medicine": 0.6,
+    "Orthopedics": 0.5
+  },
+  "vision problems": {
+    "Ophthalmology": 1.0,
+    "Neurology": 0.7,
+    "General Medicine": 0.5
+  },
+  "hearing loss": {
+    "ENT": 1.0,
+    "Neurology": 0.6,
+    "General Medicine": 0.5
+  },
+  "sore throat": {
+    "ENT": 1.0,
+    "General Medicine": 0.8,
+    "Emergency Medicine": 0.5
+  },
+  "runny nose": {
+    "Allergy": 0.9,
+    "ENT": 0.8,
+    "General Medicine": 0.6
+  },
+  "congestion": {
+    "Allergy": 0.9,
+    "ENT": 0.8,
+    "General Medicine": 0.6
+  },
+  "loss of appetite": {
+    "General Medicine": 0.7,
+    "Gastroenterology": 0.8,
+    "Psychiatry": 0.6
+  },
+  "weight loss": {
+    "General Medicine": 0.8,
+    "Endocrinology": 0.9,
+    "Gastroenterology": 0.7,
+    "Oncology": 0.8
+  },
+  "weight gain": {
+    "General Medicine": 0.7,
+    "Endocrinology": 0.9,
+    "Nutrition": 0.8
+  },
+  "insomnia": {
+    "Psychiatry": 0.9,
+    "General Medicine": 0.7,
+    "Neurology": 0.6
+  },
+  "anxiety": {
+    "Psychiatry": 1.0,
+    "General Medicine": 0.7,
+    "Neurology": 0.5
+  },
+  "depression": {
+    "Psychiatry": 1.0,
+    "General Medicine": 0.7,
+    "Neurology": 0.5
+  },
+  "memory problems": {
+    "Neurology": 1.0,
+    "Psychiatry": 0.8,
+    "General Medicine": 0.6
+  },
+  "confusion": {
+    "Neurology": 1.0,
+    "Emergency Medicine": 0.9,
+    "General Medicine": 0.6
+  },
+  "seizures": {
+    "Neurology": 1.0,
+    "Emergency Medicine": 0.9,
+    "General Medicine": 0.5
+  },
+  "tremors": {
+    "Neurology": 1.0,
+    "General Medicine": 0.6
+  },
+  "palpitations": {
+    "Cardiology": 1.0,
+    "General Medicine": 0.7,
+    "Emergency Medicine": 0.6
+  },
+  "irregular heartbeat": {
+    "Cardiology": 1.0,
+    "Emergency Medicine": 0.8,
+    "General Medicine": 0.6
+  },
+  "high blood pressure": {
+    "Cardiology": 0.9,
+    "General Medicine": 0.8,
+    "Endocrinology": 0.7
+  },
+  "low blood pressure": {
+    "Cardiology": 0.8,
+    "General Medicine": 0.7,
+    "Emergency Medicine": 0.6
+  },
+  "urinary problems": {
+    "Urology": 1.0,
+    "General Medicine": 0.7,
+    "Gynecology": 0.6
+  },
+  "frequent urination": {
+    "Urology": 0.9,
+    "Endocrinology": 0.8,
+    "General Medicine": 0.6
+  },
+  "painful urination": {
+    "Urology": 1.0,
+    "General Medicine": 0.7,
+    "Gynecology": 0.6
+  },
+  "blood in urine": {
+    "Urology": 1.0,
+    "Emergency Medicine": 0.8,
+    "General Medicine": 0.6
+  },
+  "menstrual problems": {
+    "Gynecology": 1.0,
+    "General Medicine": 0.7,
+    "Endocrinology": 0.6
+  },
+  "pregnancy symptoms": {
+    "Gynecology": 1.0,
+    "Obstetrics": 1.0,
+    "General Medicine": 0.6
+  }
+}

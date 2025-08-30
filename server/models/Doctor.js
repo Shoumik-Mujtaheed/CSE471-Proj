@@ -1,48 +1,45 @@
 import mongoose from 'mongoose';
 
-// Days of week for appointment settings (could use number 0-6 or string)
-const daysOfWeekEnum = [
-  "Sunday", "Monday", "Tuesday", "Wednesday",
-  "Thursday", "Friday", "Saturday"
-];
-
-const appointmentTimeSchema = new mongoose.Schema(
-  {
-    dayOfWeek: {
-      type: String,
-      enum: daysOfWeekEnum,
-      required: true
-    },
-    startTime: {
-      type: String, // e.g., "19:00"
-      required: true
-    },
-    endTime: {
-      type: String, // e.g., "22:00"
-      required: true
-    }
-  },
-  { _id: false } // prevents creation of an unnecessary _id on subdocuments
-);
-
 const doctorSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
-      unique: true // One-to-one with User
     },
     specialty: {
       type: String,
       required: true,
       trim: true,
     },
-    appointmentTimes: [appointmentTimeSchema], // Array of available slots
+    department: {
+      type: String,
+      trim: true,
+    },
+    // Array to store approved time slots for this doctor
+    appointmentTimes: [{
+      dayOfWeek: {
+        type: Number,
+        enum: [0, 1, 2, 3, 4, 5, 6], // 0=Sunday, 1=Monday, etc.
+        required: true
+      },
+      timeSlot: {
+        type: String,
+        enum: ['8-12', '12-4', '4-8', '20-00'],
+        required: true
+      },
+      timeSlotId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'TimeSlot',
+        required: true
+      },
+      approvedAt: {
+        type: Date,
+        default: Date.now
+      }
+    }]
   },
   { timestamps: true }
 );
 
-const Doctor = mongoose.model("Doctor", doctorSchema);
-
-export default Doctor;
+export default mongoose.model('Doctor', doctorSchema);

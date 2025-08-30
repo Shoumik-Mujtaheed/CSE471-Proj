@@ -25,6 +25,13 @@ function MedicineTable({
     onBulkUpload && onBulkUpload();
   };
 
+  // Helper function to get stock status
+  const getStockStatus = (medicine) => {
+    if (medicine.quantity === 0) return { status: 'out-of-stock', color: '#dc3545', text: 'Out of Stock' };
+    if (medicine.needsReorder) return { status: 'low-stock', color: '#ffc107', text: 'Low Stock' };
+    return { status: 'in-stock', color: '#28a745', text: 'In Stock' };
+  };
+
   return (
     <div>
       {editable && (
@@ -50,48 +57,86 @@ function MedicineTable({
             <th style={{ textAlign: "right", padding: "8px", borderBottom: "1px solid #ccc" }}>
               Price
             </th>
+            <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid #ccc" }}>
+              Stock Status
+            </th>
+            <th style={{ textAlign: "left", padding: "8px", borderBottom: "1px solid #ccc" }}>
+              Reorder Info
+            </th>
             {editable && <th style={{ minWidth: 120 }} />}
           </tr>
         </thead>
-        <tbody>
-          {medicines.map((med) => (
-            <tr key={med._id}>
-              <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>
-                {med.name}
-              </td>
-              <td style={{ textAlign: "right", padding: "8px", borderBottom: "1px solid #eee" }}>
-                {med.quantity}
-              </td>
-              <td style={{ textAlign: "right", padding: "8px", borderBottom: "1px solid #eee" }}>
-                {med.price}tk
-              </td>
-              {editable && (
+        <tbody id="inventoryBody">
+          {medicines.map((med) => {
+            const stockStatus = getStockStatus(med);
+            return (
+              <tr key={med._id} style={{ 
+                backgroundColor: med.needsReorder ? '#fff3cd' : 'transparent',
+                borderLeft: med.needsReorder ? '4px solid #ffc107' : 'none'
+              }}>
                 <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>
-                  <button
-                    style={{ marginRight: 4 }}
-                    onClick={() => setShowEdit(med)}
-                  >
-                    Change
-                  </button>
-                  <button
-                    style={{ color: "red" }}
-                    onClick={() => {
-                      if (
-                        window.confirm("Are you sure you want to delete this medicine?")
-                      ) {
-                        onDeleteMedicine && onDeleteMedicine(med._id);
-                      }
-                    }}
-                  >
-                    Remove
-                  </button>
+                  {med.name}
                 </td>
-              )}
-            </tr>
-          ))}
+                <td style={{ textAlign: "right", padding: "8px", borderBottom: "1px solid #eee" }}>
+                  <span style={{ 
+                    color: stockStatus.color, 
+                    fontWeight: med.needsReorder ? 'bold' : 'normal' 
+                  }}>
+                    {med.quantity}
+                  </span>
+                </td>
+                <td style={{ textAlign: "right", padding: "8px", borderBottom: "1px solid #eee" }}>
+                  {med.price}tk
+                </td>
+                <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>
+                  <span style={{ 
+                    color: stockStatus.color, 
+                    fontWeight: 'bold',
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    backgroundColor: stockStatus.color + '20',
+                    fontSize: '12px'
+                  }}>
+                    {stockStatus.text}
+                  </span>
+                </td>
+                <td style={{ padding: "8px", borderBottom: "1px solid #eee", fontSize: '12px' }}>
+                  {med.needsReorder && (
+                    <div>
+                      <div><strong>Threshold:</strong> {med.reorderThreshold}</div>
+                      <div><strong>Order:</strong> {med.reorderQuantity}</div>
+                      <div><strong>Supplier:</strong> {med.supplier}</div>
+                    </div>
+                  )}
+                </td>
+                {editable && (
+                  <td style={{ padding: "8px", borderBottom: "1px solid #eee" }}>
+                    <button
+                      style={{ marginRight: 4 }}
+                      onClick={() => setShowEdit(med)}
+                    >
+                      Change
+                    </button>
+                    <button
+                      style={{ color: "red" }}
+                      onClick={() => {
+                        if (
+                          window.confirm("Are you sure you want to delete this medicine?")
+                        ) {
+                          onDeleteMedicine && onDeleteMedicine(med._id);
+                        }
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </td>
+                )}
+              </tr>
+            );
+          })}
           {medicines.length === 0 && (
             <tr>
-              <td colSpan={editable ? 4 : 3} style={{ textAlign: "center", padding: "16px" }}>
+              <td colSpan={editable ? 6 : 5} style={{ textAlign: "center", padding: "16px" }}>
                 No medicines in inventory.
               </td>
             </tr>

@@ -1,12 +1,41 @@
-# React + Vite
+# mediCore - React Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the React frontend for the mediCore hospital management system, built with Vite for fast development and modern tooling.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Modern React**: Built with React 19 and latest features
+- **Fast Development**: Vite for instant hot module replacement
+- **Professional UI**: Clean, modern interface with responsive design
+- **Role-Based Access**: Different dashboards for patients, doctors, staff, and admins
+- **Component Library**: Reusable components for consistent UI
 
-## Expanding the ESLint configuration
+## Available Scripts
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run lint` - Run ESLint
+- `npm run preview` - Preview production build
+
+## Project Structure
+
+- `src/pages/` - Main page components
+- `src/components/` - Reusable UI components
+- `src/utils/` - Utility functions and API helpers
+- `src/styles/` - CSS styling files
+
+## Technologies
+
+- React 19 with modern hooks
+- React Router for navigation
+- Vite for build tooling
+- ESLint for code quality
+- Modern CSS with custom properties
+
+## Getting Started
+
+1. Install dependencies: `npm install`
+2. Start development: `npm run dev`
+3. Open browser to `http://localhost:5173`
+
+The frontend connects to the mediCore backend API for all data operations and user management.
