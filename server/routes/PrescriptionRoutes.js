@@ -16,12 +16,9 @@ router.post('/', createPrescription);
 router.get('/', getAllPrescriptions);
 router.get('/patients', getAllPatients);
 router.get('/doctors', getAllDoctors);
-<<<<<<< HEAD
-=======
 router.get('/:id', getPrescriptionById);
 router.get('/patient/:patientId', getPrescriptionsByPatient);
 router.put('/:id', updatePrescription);
 router.delete('/:id', cancelPrescription);
->>>>>>> shoumikfinal
 
 export default router;
