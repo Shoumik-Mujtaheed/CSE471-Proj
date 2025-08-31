@@ -10,14 +10,17 @@ const AppointmentPage = () => {
   const [availableSlots, setAvailableSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
+
   const [formData, setFormData] = useState({
     doctorId: '',
-    date: '',
-    dayOfWeek: '',
+    date: '',          // legacy (kept for UI compatibility)
+    dayOfWeek: '',     // legacy (kept for UI compatibility)
     timeSlot: '',
     reason: '',
-    urgency: 'normal'
+    urgency: 'normal',
+    bookedDate: ''     // NEW: concrete date required by backend
   });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -43,8 +46,8 @@ const AppointmentPage = () => {
       if (response.ok) {
         const data = await response.json();
         const allSlots = data.availableTimes || [];
-        const availableSlots = await filterBookedSlots(allSlots, doctorId);
-        setAvailableSlots(availableSlots);
+        const filtered = await filterBookedSlots(allSlots, doctorId);
+        setAvailableSlots(filtered);
       }
     } catch (error) {
       console.error('Error fetching available slots:', error);
@@ -77,7 +80,6 @@ const AppointmentPage = () => {
         for (const weekDay of nextWeek) {
           if (weekDay.dayOfWeek === slot.dayOfWeek) {
             const isBooked = await checkIfSlotBooked(doctorId, weekDay.date, slot.timeSlot);
-            
             if (!isBooked) {
               availableDates.push({
                 date: weekDay.date,
@@ -108,12 +110,10 @@ const AppointmentPage = () => {
     try {
       setCheckingAvailability(true);
       const token = localStorage.getItem('userToken');
-      
       if (!token) {
         console.error('No authentication token found');
         return false;
       }
-      
       const response = await fetch(`http://localhost:5000/api/appointments/check-availability`, {
         method: 'POST',
         headers: {
@@ -122,11 +122,10 @@ const AppointmentPage = () => {
         },
         body: JSON.stringify({
           doctorId,
-          date,
+          date,      // backend availability check can still accept legacy 'date' for checking same-day occupancy
           timeSlot
         })
       });
-      
       if (response.ok) {
         const data = await response.json();
         return data.isBooked;
@@ -134,7 +133,6 @@ const AppointmentPage = () => {
         console.error('Authentication failed - token may be expired');
         return false;
       }
-      
       return false;
     } catch (error) {
       console.error('Error checking slot availability:', error);
@@ -149,32 +147,38 @@ const AppointmentPage = () => {
     return days[dayOfWeek];
   };
 
+  // Helper to compute next occurrence of a weekday (legacy helper kept)
   const getNextOccurrence = (dayOfWeek) => {
     const today = new Date();
     const currentDay = today.getDay();
-    
     let daysToAdd = dayOfWeek - currentDay;
-    
     if (daysToAdd <= 0) {
       daysToAdd += 7;
     }
-    
     const nextDate = new Date(today);
     nextDate.setDate(today.getDate() + daysToAdd);
-    
     const year = nextDate.getFullYear();
     const month = String(nextDate.getMonth() + 1).padStart(2, '0');
     const day = String(nextDate.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
 
+  // CHANGED: when selecting a slot, prefer the earliest available concrete date the server exposed for that day,
+  // otherwise fall back to getNextOccurrence (legacy behavior).
   const handleTimeSlotSelect = (dayOfWeek, timeSlot) => {
-    const nextDate = getNextOccurrence(dayOfWeek);
+    // find matching slot to read availableDates if present
+    const slot = availableSlots.find(s => s.dayOfWeek === dayOfWeek && s.timeSlot === timeSlot);
+    const concrete =
+      (slot?.availableDates && slot.availableDates.length > 0)
+        ? slot.availableDates[0].date
+        : getNextOccurrence(dayOfWeek);
+
     setFormData(prev => ({ 
       ...prev, 
       dayOfWeek, 
       timeSlot,
-      date: nextDate
+      date: concrete,        // legacy UI value
+      bookedDate: concrete   // NEW: the value actually required by backend
     }));
   };
 
@@ -187,22 +191,27 @@ const AppointmentPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (isSubmitting) return;
-    
     setIsSubmitting(true);
-    
+
+    // NEW: construct request with bookedDate (not date/dayOfWeek)
     const requestPayload = {
       doctorId: formData.doctorId,
       reason: formData.reason,
       urgency: formData.urgency,
-      dayOfWeek: formData.dayOfWeek,
       timeSlot: formData.timeSlot,
-      date: formData.date
+      bookedDate: formData.bookedDate // required by updated backend
     };
-    
+
+    // Quick guardrails
+    if (!requestPayload.bookedDate || !requestPayload.timeSlot || !requestPayload.reason || !requestPayload.doctorId) {
+      alert('Please select a time slot and ensure reason is provided.');
+      setIsSubmitting(false);
+      return;
+    }
+
     console.log('🚀 API Request:', requestPayload);
-    
+
     try {
       const token = localStorage.getItem('userToken');
       const response = await fetch('http://localhost:5000/api/appointments', {
@@ -319,7 +328,7 @@ const AppointmentPage = () => {
                           <>
                             <div className="selected-info">✓ Selected</div>
                             <div style={{ color: '#666', fontSize: '11px', marginTop: '2px' }}>
-                              {new Date(getNextOccurrence(slot.dayOfWeek)).toLocaleDateString('en-US', { 
+                              {new Date(formData.bookedDate || getNextOccurrence(slot.dayOfWeek)).toLocaleDateString('en-US', { 
                                 weekday: 'short', 
                                 month: 'short', 
                                 day: 'numeric' 
@@ -338,7 +347,7 @@ const AppointmentPage = () => {
               )}
             </div>
 
-            {formData.dayOfWeek !== null && (
+            {formData.dayOfWeek !== null && formData.timeSlot && (
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '5px', color: '#555', fontWeight: '500' }}>
                 Appointment Date:
@@ -350,7 +359,7 @@ const AppointmentPage = () => {
                 backgroundColor: '#f8f9fa',
                 color: '#333'
               }}>
-                {new Date(getNextOccurrence(formData.dayOfWeek)).toLocaleDateString('en-US', { 
+                {new Date(formData.bookedDate || getNextOccurrence(formData.dayOfWeek)).toLocaleDateString('en-US', { 
                   weekday: 'long', 
                   year: 'numeric', 
                   month: 'long', 
@@ -358,7 +367,7 @@ const AppointmentPage = () => {
                 })}
               </div>
             </div>
-          )}
+            )}
 
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '5px', color: '#555', fontWeight: '500' }}>

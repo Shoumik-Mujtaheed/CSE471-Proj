@@ -2,103 +2,128 @@ import mongoose from 'mongoose';
 
 const appointmentSchema = new mongoose.Schema(
   {
-    user: { // Patient
+    // Patient
+    user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
+      index: true
     },
-    doctor: { // Doctor
+
+    // Doctor
+    doctor: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Doctor",
+      ref: 'Doctor',
       required: true,
+      index: true
     },
-    date: { // Specific appointment date
+
+    // NEW: Concrete calendar date of the appointment (local midnight for that day)
+    // Always set this when booking; do not rely on dayOfWeek alone.
+    bookedDate: {
       type: Date,
       required: true,
+      index: true
     },
-    dayOfWeek: { // Day of week (0-6, 0=Sunday)
-      type: Number,
-      required: true,
-      min: 0,
-      max: 6
+
+    // Optional: store a precise clock time if you later move beyond coarse slots
+    startTime: {
+      type: Date
     },
-    timeSlot: { // Time slot (e.g., "8-12", "12-4")
+    endTime: {
+      type: Date
+    },
+
+    // Session window label (unchanged)
+    timeSlot: {
       type: String,
       required: true,
       enum: ['8-12', '12-4', '4-8', '20-00']
     },
-    reason: { // Reason for visit
+
+    // Optional, derived: 0-6 based on bookedDate. Kept for fast filtering and legacy UI.
+    dayOfWeek: {
+      type: Number,
+      min: 0,
+      max: 6,
+      index: true
+    },
+
+    // Reason/urgency
+    reason: {
       type: String,
       required: true,
-      trim: true,
+      trim: true
     },
-    urgency: { // Urgency level
+    urgency: {
       type: String,
       enum: ['low', 'normal', 'high', 'emergency'],
-      default: 'normal',
+      default: 'normal'
     },
-    status: { // Appointment status
+
+    // Status lifecycle
+    status: {
       type: String,
       enum: ['booked', 'confirmed', 'completed', 'cancelled', 'no-show'],
       default: 'booked',
+      index: true
     },
-    notes: { // Additional notes
+
+    notes: {
       type: String,
-      trim: true,
+      trim: true
     },
-    prescription: { // Reference to prescription if created
+
+    // Clinical linkage
+    prescription: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Prescription",
+      ref: 'Prescription'
     },
-    followUpDate: { // Follow-up appointment date
-      type: Date,
+
+    followUpDate: {
+      type: Date
     },
-    followUpReason: { // Reason for follow-up
+    followUpReason: {
       type: String,
-      trim: true,
+      trim: true
     },
-    // Payment and billing
+
+    // Billing
     consultationFee: {
       type: Number,
-      default: 0,
+      default: 0
     },
     paymentStatus: {
       type: String,
       enum: ['pending', 'paid', 'waived'],
-      default: 'pending',
+      default: 'pending'
     },
     paymentMethod: {
       type: String,
-      enum: ['cash', 'card', 'insurance', 'online'],
+      enum: ['cash', 'card', 'insurance', 'online']
     },
+
     // Insurance
     insuranceProvider: String,
     insurancePolicyNumber: String,
-    insuranceCoverage: Number,
-    // Timestamps
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-    updatedAt: {
-      type: Date,
-      default: Date.now,
-    },
+    insuranceCoverage: Number
   },
   { timestamps: true }
 );
 
-// Indexes for efficient queries
-appointmentSchema.index({ user: 1, date: 1 });
-appointmentSchema.index({ doctor: 1, date: 1 });
-appointmentSchema.index({ status: 1, date: 1 });
-appointmentSchema.index({ date: 1, timeSlot: 1 });
-appointmentSchema.index({ doctor: 1, dayOfWeek: 1, timeSlot: 1 });
-
-// Pre-save middleware to update updatedAt
-appointmentSchema.pre('save', function(next) {
-  this.updatedAt = new Date();
+// Derived dayOfWeek from bookedDate, if not set
+appointmentSchema.pre('save', function (next) {
+  if (this.bookedDate && (this.dayOfWeek === undefined || this.dayOfWeek === null)) {
+    const d = new Date(this.bookedDate);
+    this.dayOfWeek = d.getDay();
+  }
   next();
 });
+
+// Helpful compound indexes for common queries
+appointmentSchema.index({ doctor: 1, bookedDate: 1, timeSlot: 1 }, { unique: true }); // prevent double-booking a slot/day
+appointmentSchema.index({ user: 1, bookedDate: -1 });
+appointmentSchema.index({ doctor: 1, status: 1, bookedDate: 1 });
+appointmentSchema.index({ bookedDate: 1, timeSlot: 1 });
 
 export default mongoose.model('Appointment', appointmentSchema);

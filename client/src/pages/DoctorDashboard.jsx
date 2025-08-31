@@ -15,7 +15,9 @@ const DoctorDashboard = () => {
   const [slotRequestData, setSlotRequestData] = useState({
     dayOfWeek: [],
     timeSlot: '',
-    notes: ''
+    notes: '',
+    validFrom: '', // NEW: start date (YYYY-MM-DD)
+    validTo: ''    // NEW: end date (YYYY-MM-DD)
   });
 
   const [loading, setLoading] = useState(true);
@@ -26,6 +28,7 @@ const DoctorDashboard = () => {
   const [showLeaveRequestForm, setShowLeaveRequestForm] = useState(false);
   const [showPatientEMR, setShowPatientEMR] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const [selectedAppointment, setSelectedAppointment] = useState(null); // NEW: for appointment-based prescriptions
   const [leaveRequestData, setLeaveRequestData] = useState({
     leaveType: 'vacation',
     startDate: '',
@@ -46,51 +49,77 @@ const DoctorDashboard = () => {
   }, [navigate]);
 
   const fetchData = async () => {
-    try {
-      const token = localStorage.getItem('userToken');
-      
-      // Fetch patients
-      const patientsRes = await fetch(`${API_BASE_URL}/api/doctor/patients`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (patientsRes.ok) {
-        const patientsData = await patientsRes.json();
-        setPatients(patientsData);
-      }
-
-      // Fetch leave requests
-      const leaveRequestsRes = await fetch(`${API_BASE_URL}/api/doctor/leave-requests`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (leaveRequestsRes.ok) {
-        const leaveRequestsData = await leaveRequestsRes.json();
-        setLeaveRequests(leaveRequestsData);
-      }
-
-      // Fetch doctor's time slots
-      const timeSlotsRes = await fetch(`${API_BASE_URL}/api/time-slots/doctor/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (timeSlotsRes.ok) {
-        const timeSlotsData = await timeSlotsRes.json();
-        setTimeSlots(timeSlotsData.timeSlots || []);
-      }
-
-      // Fetch doctor's appointments
-      const appointmentsRes = await fetch(`${API_BASE_URL}/api/appointments/doctor/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (appointmentsRes.ok) {
-        const appointmentsData = await appointmentsRes.json();
-        setAppointments(appointmentsData.appointments || []);
-      }
-
-
-    } catch (err) {
-      console.error('Error fetching data:', err);
-    } finally {
-      setLoading(false);
+  try {
+    const token = localStorage.getItem('userToken');
+    
+    // Fetch patients using the original endpoint
+    const patientsRes = await fetch(`${API_BASE_URL}/api/doctor/patients`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (patientsRes.ok) {
+      const patientsData = await patientsRes.json();
+      setPatients(patientsData);
     }
+
+    // Fetch leave requests
+    const leaveRequestsRes = await fetch(`${API_BASE_URL}/api/doctor/leave-requests`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (leaveRequestsRes.ok) {
+      const leaveRequestsData = await leaveRequestsRes.json();
+      setLeaveRequests(leaveRequestsData);
+    }
+
+    // Fetch doctor's time slots
+    const timeSlotsRes = await fetch(`${API_BASE_URL}/api/time-slots/doctor/me`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (timeSlotsRes.ok) {
+      const timeSlotsData = await timeSlotsRes.json();
+      setTimeSlots(timeSlotsData.timeSlots || []);
+    }
+
+    // Fetch doctor's appointments
+    const appointmentsRes = await fetch(`${API_BASE_URL}/api/appointments/doctor/me`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (appointmentsRes.ok) {
+      const appointmentsData = await appointmentsRes.json();
+      setAppointments(appointmentsData.appointments || []);
+    }
+
+  } catch (err) {
+    console.error('Error fetching data:', err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+
+  // NEW: Extract unique patients from appointments
+  const extractUniquePatients = (appointments) => {
+    const seen = new Set();
+    const uniquePatients = [];
+    
+    appointments.forEach(appointment => {
+      const userId = appointment.user?._id;
+      if (userId && !seen.has(userId)) {
+        seen.add(userId);
+        uniquePatients.push({
+          _id: userId,
+          name: appointment.user.name,
+          email: appointment.user.email,
+          phoneNumber: appointment.user.phoneNumber,
+          user: appointment.user, // Keep original structure for compatibility
+          // Add appointment count for this patient
+          appointmentCount: appointments.filter(a => a.user?._id === userId).length
+        });
+      }
+    });
+    
+    return uniquePatients;
   };
 
   const handleLogout = () => {
@@ -107,7 +136,23 @@ const DoctorDashboard = () => {
       alert('Please select at least one day');
       return;
     }
-    
+
+    // NEW: validate date range if provided (both are required for dated availability)
+    if (!slotRequestData.validFrom || !slotRequestData.validTo) {
+      alert('Please select Start Date and End Date for these weekly slots.');
+      return;
+    }
+    const from = new Date(slotRequestData.validFrom);
+    const to = new Date(slotRequestData.validTo);
+    if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+      alert('Please select a valid date range.');
+      return;
+    }
+    if (from > to) {
+      alert('Start Date must be before End Date.');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('userToken');
       const res = await fetch(`${API_BASE_URL}/api/time-slots/request`, {
@@ -116,6 +161,7 @@ const DoctorDashboard = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
+        // CHANGED: now we also send validFrom and validTo (backend should accept and store a window)
         body: JSON.stringify(slotRequestData)
       });
 
@@ -125,7 +171,9 @@ const DoctorDashboard = () => {
         setSlotRequestData({
           dayOfWeek: [],
           timeSlot: '',
-          notes: ''
+          notes: '',
+          validFrom: '', // NEW reset
+          validTo: ''    // NEW reset
         });
         fetchData(); // Refresh data
       } else {
@@ -235,6 +283,23 @@ const DoctorDashboard = () => {
     setShowPatientEMR(true);
   };
 
+  // NEW: Appointment-based EMR function
+const viewAppointmentEMR = (appointment) => {
+  // Create a patient object from the appointment's user data
+  const patientFromAppointment = {
+    _id: appointment.user?._id,
+    user: appointment.user,
+    name: appointment.user?.name,
+    email: appointment.user?.email,
+    phoneNumber: appointment.user?.phoneNumber
+  };
+  
+  setSelectedPatient(patientFromAppointment);
+  setSelectedAppointment(appointment);
+  setShowPatientEMR(true);
+};
+
+
   const handlePrescriptionCreated = () => {
     fetchData(); // Refresh data when prescription is created
   };
@@ -261,7 +326,6 @@ const DoctorDashboard = () => {
                 <h3 style={{ margin: '0 0 10px 0', color: '#856404' }}>📋 Appointments</h3>
                 <p style={{ fontSize: '24px', fontWeight: 'bold', margin: '0', color: '#856404' }}>{appointments.length}</p>
               </div>
-
             </div>
 
             {/* Quick Actions */}
@@ -299,12 +363,11 @@ const DoctorDashboard = () => {
               >
                 📅 Request Leave
               </button>
-
             </div>
           </div>
         );
       
-      case 'patients':
+       case 'patients':
         return (
           <div>
             <h2 style={{ color: '#007bff', marginBottom: '20px' }}>👥 My Patients</h2>
@@ -315,7 +378,7 @@ const DoctorDashboard = () => {
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                 {patients.map((patient, index) => (
-                  <div key={index} style={{
+                  <div key={patient._id || index} style={{
                     border: '1px solid #ddd',
                     borderRadius: '8px',
                     padding: '20px',
@@ -327,10 +390,10 @@ const DoctorDashboard = () => {
                   onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
                   onClick={() => viewPatientEMR(patient)}
                   >
-                    <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>{patient.user?.name || 'Unknown Patient'}</h3>
-                    <p style={{ margin: '5px 0', color: '#666' }}><strong>Email:</strong> {patient.user?.email || 'N/A'}</p>
-                    <p style={{ margin: '5px 0', color: '#666' }}><strong>Phone:</strong> {patient.user?.phoneNumber || 'N/A'}</p>
-                    <p style={{ margin: '5px 0', color: '#666' }}><strong>Status:</strong> {patient.status}</p>
+                    <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>{patient.user?.name || patient.name || 'Unknown Patient'}</h3>
+                    <p style={{ margin: '5px 0', color: '#666' }}><strong>Email:</strong> {patient.user?.email || patient.email || 'N/A'}</p>
+                    <p style={{ margin: '5px 0', color: '#666' }}><strong>Phone:</strong> {patient.user?.phoneNumber || patient.phoneNumber || 'N/A'}</p>
+                    <p style={{ margin: '5px 0', color: '#666' }}><strong>Status:</strong> {patient.status || 'Active'}</p>
                     <div style={{ 
                       marginTop: '15px', 
                       padding: '8px 16px', 
@@ -400,6 +463,11 @@ const DoctorDashboard = () => {
                           {slot.status}
                         </span>
                       </p>
+                      {slot.validFrom && slot.validTo && ( // NEW: show window if backend provides it
+                        <p style={{ margin: '5px 0', color: '#666' }}>
+                          <strong>Active:</strong> {new Date(slot.validFrom).toLocaleDateString()} - {new Date(slot.validTo).toLocaleDateString()}
+                        </p>
+                      )}
                       {slot.notes && (
                         <p style={{ margin: '5px 0', color: '#666' }}>
                           <strong>Notes:</strong> {slot.notes}
@@ -429,7 +497,7 @@ const DoctorDashboard = () => {
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' }}>
                 {appointments.map((appointment, index) => (
-                  <div key={index} style={{
+                  <div key={appointment._id || index} style={{
                     border: '1px solid #ddd',
                     borderRadius: '8px',
                     padding: '20px',
@@ -449,7 +517,7 @@ const DoctorDashboard = () => {
                       </span>
                     </div>
                     <p style={{ margin: '5px 0', color: '#666' }}>
-                      <strong>Date:</strong> {new Date(appointment.date).toLocaleDateString('en-US', { 
+                      <strong>Date:</strong> {new Date(appointment.bookedDate || appointment.date).toLocaleDateString('en-US', { 
                         weekday: 'long', 
                         year: 'numeric', 
                         month: 'long', 
@@ -478,6 +546,26 @@ const DoctorDashboard = () => {
                     <p style={{ margin: '5px 0', color: '#666' }}>
                       <strong>Phone:</strong> {appointment.user?.phoneNumber || 'N/A'}
                     </p>
+                    
+                    {/* Write Prescription Button */}
+                    <div style={{ marginTop: '15px' }}>
+                      <button
+                        onClick={() => viewAppointmentEMR(appointment)}
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          backgroundColor: '#28a745',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '5px',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                          fontWeight: '500'
+                        }}
+                      >
+                        📝 Write Prescription
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -552,8 +640,6 @@ const DoctorDashboard = () => {
             </div>
           </div>
         );
-      
-
       
       default:
         return null;
@@ -748,6 +834,45 @@ const DoctorDashboard = () => {
                   ))}
                 </div>
               </div>
+
+              {/* NEW: Start/End Date inputs, styled the same as existing inputs */}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', color: '#555' }}>
+                  Start Date:
+                </label>
+                <input
+                  type="date"
+                  value={slotRequestData.validFrom}
+                  onChange={(e) => setSlotRequestData({ ...slotRequestData, validFrom: e.target.value })}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '5px',
+                    fontSize: '16px'
+                  }}
+                />
+              </div>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', color: '#555' }}>
+                  End Date:
+                </label>
+                <input
+                  type="date"
+                  value={slotRequestData.validTo}
+                  onChange={(e) => setSlotRequestData({ ...slotRequestData, validTo: e.target.value })}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '5px',
+                    fontSize: '16px'
+                  }}
+                />
+              </div>
+
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ display: 'block', marginBottom: '5px', color: '#555' }}>
                   Time Slot:
@@ -977,9 +1102,11 @@ const DoctorDashboard = () => {
       {showPatientEMR && selectedPatient && (
         <PatientEMR
           patient={selectedPatient}
+          appointment={selectedAppointment} // Pass appointment for context
           onClose={() => {
             setShowPatientEMR(false);
             setSelectedPatient(null);
+            setSelectedAppointment(null);
           }}
           onPrescriptionCreated={handlePrescriptionCreated}
         />
@@ -989,6 +1116,3 @@ const DoctorDashboard = () => {
 };
 
 export default DoctorDashboard;
-
-
-
