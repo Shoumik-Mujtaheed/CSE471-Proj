@@ -116,7 +116,7 @@ export const createAppointment = async (req, res) => {
   }
 };
 
-// GET /api/appointments - Get authenticated patient’s appointments
+// GET /api/appointments - Get authenticated patient's appointments
 export const getPatientAppointments = async (req, res) => {
   try {
     const appointments = await Appointment.find({ user: req.user._id })
@@ -156,7 +156,7 @@ export const getPatientAppointmentsById = async (req, res) => {
   }
 };
 
-// GET /api/appointments/doctor/me - Get authenticated doctor’s appointments
+// GET /api/appointments/doctor/me - Get authenticated doctor's appointments
 export const getDoctorAppointments = async (req, res) => {
   try {
     const doctor = await Doctor.findOne({ user: req.user._id });
@@ -212,10 +212,25 @@ export const getAppointmentById = async (req, res) => {
   }
 };
 
-// PUT /api/appointments/:id - Update appointment (only if still booked)
+// 🔥 NEW: Function to update appointment status (used by PrescriptionController)
+export const updateAppointmentStatus = async (appointmentId, newStatus) => {
+  try {
+    const appointment = await Appointment.findByIdAndUpdate(
+      appointmentId,
+      { status: newStatus },
+      { new: true }
+    );
+    return appointment;
+  } catch (error) {
+    console.error('Update appointment status error:', error);
+    throw error;
+  }
+};
+
+// PUT /api/appointments/:id - Update appointment (UPDATED to allow status updates)
 export const updateAppointment = async (req, res) => {
   try {
-    const { bookedDate, timeSlot, reason, urgency } = req.body;
+    const { bookedDate, timeSlot, reason, urgency, status } = req.body; // Added status
     const appointment = await Appointment.findById(req.params.id);
 
     if (!appointment) {
@@ -226,7 +241,14 @@ export const updateAppointment = async (req, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    if (appointment.status !== 'booked') {
+    // 🔥 NEW: Allow status updates for doctors/admin or when marking as completed
+    if (status) {
+      if (req.user.role === 'doctor' || req.user.role === 'admin' || status === 'completed') {
+        appointment.status = status;
+      } else {
+        return res.status(400).json({ message: 'Insufficient permissions to update status' });
+      }
+    } else if (appointment.status !== 'booked') {
       return res.status(400).json({ message: 'Can only update booked appointments' });
     }
 
@@ -336,5 +358,6 @@ export default {
   getDoctorAppointments,
   getAppointmentById,
   updateAppointment,
+  updateAppointmentStatus, 
   cancelAppointment
 };

@@ -64,6 +64,62 @@ export const deleteMedicine = async (req, res) => {
   }
 };
 
+// Deduct medicine stock when prescription is written
+export const deductMedicineStock = async (medicineId, quantityToDeduct) => {
+  try {
+    const medicine = await Inventory.findById(medicineId);
+    if (!medicine) {
+      throw new Error(`Medicine with ID ${medicineId} not found in inventory`);
+    }
+    
+    if (medicine.quantity < quantityToDeduct) {
+      throw new Error(`Insufficient stock for ${medicine.name}. Available: ${medicine.quantity}, Required: ${quantityToDeduct}`);
+    }
+    
+    // Deduct the prescribed quantity
+    medicine.quantity -= quantityToDeduct;
+    
+    // Check if reorder is needed
+    medicine.needsReorder = medicine.quantity <= medicine.reorderThreshold;
+    
+    // Save the updated medicine
+    await medicine.save();
+    
+    console.log(`Stock updated: ${medicine.name} - Deducted: ${quantityToDeduct}, Remaining: ${medicine.quantity}`);
+    
+    return medicine;
+  } catch (error) {
+    console.error('Error deducting medicine stock:', error);
+    throw error;
+  }
+};
+
+// Bulk deduct multiple medicines (for prescriptions)
+export const bulkDeductMedicines = async (prescribedMedicines) => {
+  const updatedMedicines = [];
+  const errors = [];
+
+  for (const med of prescribedMedicines) {
+    try {
+      const updatedMedicine = await deductMedicineStock(med.medicineId, med.quantity);
+      updatedMedicines.push({
+        medicineId: med.medicineId,
+        medicineName: med.medicineName,
+        quantityDeducted: med.quantity,
+        remainingStock: updatedMedicine.quantity
+      });
+    } catch (error) {
+      errors.push({
+        medicineId: med.medicineId,
+        medicineName: med.medicineName,
+        error: error.message
+      });
+    }
+  }
+
+  return { updatedMedicines, errors };
+};
+
 // ================= MEDICATION SEARCH =================
 
 // Search medications with auto-suggestions
