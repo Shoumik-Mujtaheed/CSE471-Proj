@@ -21,7 +21,7 @@ import {
   updatePrescription,
   cancelPrescription,
   getPatientPrescriptionHistory
-} from '../controllers/prescriptionController.js';
+} from '../controllers/PrescriptionController.js';
 import { authenticateDoctor } from '../middleware/auth.js';
 
 const router = express.Router();

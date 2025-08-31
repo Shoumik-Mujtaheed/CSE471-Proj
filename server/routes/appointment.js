@@ -7,7 +7,7 @@ import {
   createAppointment,
   getPatientAppointments,
   getPatientAppointmentsById,
-  getDoctorAppointments,
+  getDoctorAppointments,  // Make sure this is imported
   getAppointmentById,
   updateAppointment,
   cancelAppointment
@@ -29,7 +29,7 @@ router.post('/check-availability', protect, async (req, res) => {
     
     const existingAppointment = await Appointment.findOne({
       doctor: doctorId,
-      date: new Date(date),
+      bookedDate: new Date(date), // Changed from 'date' to 'bookedDate'
       timeSlot: timeSlot,
       status: { $in: ['booked', 'confirmed'] }
     });
@@ -43,6 +43,9 @@ router.post('/check-availability', protect, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+// NEW: Get doctor's appointments - ADD THIS LINE
+router.get('/doctor/me', protect, getDoctorAppointments);
 
 // Create new appointment
 router.post('/', protect, createAppointment);

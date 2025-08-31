@@ -18,39 +18,47 @@ function Login() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
+  e.preventDefault();
+  setError('');
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/users/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/users/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    });
 
-      if (res.ok) {
-        const data = await res.json();
-        localStorage.setItem('userToken', data.token);
-        
-        if (data.nextPath) {
-          navigate(data.nextPath);
-        } else {
-          if (data.role === 'doctor') {
-            navigate('/doctor-dashboard');
-          } else if (data.role === 'staff') {
-            navigate('/staff-dashboard');
-          } else {
-            navigate('/patient-dashboard');
-          }
-        }
+    if (res.ok) {
+      const data = await res.json();
+      
+      // 🔥 FIX: Store the complete user data (including doctorId)
+      localStorage.setItem('userData', JSON.stringify(data));
+      localStorage.setItem('userToken', data.token);
+      
+      // Debug logging (remove after fixing)
+      console.log('🔍 Login success, stored data:', data);
+      console.log('🔍 doctorId in response:', data.doctorId);
+      
+      if (data.nextPath) {
+        navigate(data.nextPath);
       } else {
-        const errorData = await res.json();
-        setError(errorData.message || 'Login failed');
+        if (data.role === 'doctor') {
+          navigate('/doctor-dashboard');
+        } else if (data.role === 'staff') {
+          navigate('/staff-dashboard');
+        } else {
+          navigate('/patient-dashboard');
+        }
       }
-    } catch (err) {
-      setError('Network error. Please try again.');
+    } else {
+      const errorData = await res.json();
+      setError(errorData.message || 'Login failed');
     }
-  };
+  } catch (err) {
+    setError('Network error. Please try again.');
+  }
+};
+
 
   return (
     <div style={{ 
