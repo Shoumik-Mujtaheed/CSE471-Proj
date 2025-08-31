@@ -17,11 +17,22 @@ const normalizeToLocalDayStart = (d) => {
 // POST /api/appointments - Create new appointment
 export const createAppointment = async (req, res) => {
   try {
+    // 🔥 FIX: Check authenticated user first
+    if (!req.user || !req.user._id) {
+      console.error('❌ No authenticated user found');
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
     const { doctorId, bookedDate, timeSlot, reason, urgency } = req.body;
     const userId = req.user._id;
 
+    // 🔥 ADD: Debug logging
+    console.log('📝 Creating appointment for user:', userId);
+    console.log('📝 Request body:', { doctorId, bookedDate, timeSlot, reason, urgency });
+
     // Validate required fields
     if (!doctorId || !bookedDate || !timeSlot || !reason) {
+      console.error('❌ Missing required fields');
       return res.status(400).json({
         message: 'Missing required fields: doctorId, bookedDate, timeSlot, reason'
       });
@@ -30,32 +41,39 @@ export const createAppointment = async (req, res) => {
     // Validate timeSlot
     const VALID_SLOTS = ['8-12', '12-4', '4-8', '20-00'];
     if (!VALID_SLOTS.includes(timeSlot)) {
+      console.error('❌ Invalid time slot:', timeSlot);
       return res.status(400).json({ message: 'Invalid time slot' });
     }
 
     // Parse/validate bookedDate
     const dayStart = normalizeToLocalDayStart(bookedDate);
     if (isNaN(dayStart.getTime())) {
+      console.error('❌ Invalid bookedDate format:', bookedDate);
       return res.status(400).json({ message: 'Invalid bookedDate' });
     }
 
     // Optional: prevent booking in the past
     const nowStart = normalizeToLocalDayStart(new Date());
     if (dayStart < nowStart) {
+      console.error('❌ Cannot book in past:', dayStart, 'vs', nowStart);
       return res.status(400).json({ message: 'Cannot book an appointment in the past' });
     }
 
     // Check if doctor exists
+    console.log('🔍 Looking up doctor:', doctorId);
     const doctor = await Doctor.findById(doctorId);
     if (!doctor) {
+      console.error('❌ Doctor not found:', doctorId);
       return res.status(404).json({ message: 'Doctor not found' });
     }
+    console.log('✅ Doctor found:', doctor._id);
 
     // Derive weekday from bookedDate
     const derivedDayOfWeek = dayStart.getDay();
+    console.log('📅 Derived day of week:', derivedDayOfWeek);
 
     // Validate doctor weekly availability template for this weekday + slot
-    // Assumes TimeSlot documents represent weekly templates (not dated instances)
+    console.log('🔍 Checking template slot availability...');
     const templateSlot = await TimeSlot.findOne({
       dayOfWeek: derivedDayOfWeek,
       timeSlot: timeSlot,
@@ -64,12 +82,15 @@ export const createAppointment = async (req, res) => {
     });
 
     if (!templateSlot) {
+      console.error('❌ Doctor not available on selected day/time');
       return res.status(400).json({
         message: 'Doctor is not available on the selected day and time slot'
       });
     }
+    console.log('✅ Template slot found');
 
     // Check if slot is already booked for this doctor and date
+    console.log('🔍 Checking for existing appointments...');
     const existingAppointment = await Appointment.findOne({
       doctor: doctorId,
       bookedDate: dayStart,
@@ -78,12 +99,15 @@ export const createAppointment = async (req, res) => {
     });
 
     if (existingAppointment) {
+      console.error('❌ Time slot already booked');
       return res.status(400).json({
         message: 'This time slot is already booked for the selected date'
       });
     }
+    console.log('✅ No existing appointment found');
 
     // Create appointment with concrete date
+    console.log('🔍 Creating new appointment...');
     const appointment = new Appointment({
       user: userId,
       doctor: doctorId,
@@ -92,12 +116,14 @@ export const createAppointment = async (req, res) => {
       timeSlot: timeSlot,
       reason: reason.trim(),
       urgency: urgency || 'normal'
-      // Optionally set startTime/endTime here if you map from timeSlot
     });
 
+    console.log('💾 Saving appointment...');
     await appointment.save();
+    console.log('✅ Appointment saved with ID:', appointment._id);
 
     // Populate doctor and user info for response
+    console.log('🔍 Populating appointment data...');
     const populatedAppointment = await Appointment.findById(appointment._id)
       .populate('user', 'name email')
       .populate({
@@ -106,15 +132,31 @@ export const createAppointment = async (req, res) => {
         populate: { path: 'user', select: 'name email' }
       });
 
+    console.log('🎉 Appointment created successfully');
     return res.status(201).json({
       message: 'Appointment booked successfully',
       appointment: populatedAppointment
     });
+
   } catch (error) {
-    console.error('Create appointment error:', error);
-    return res.status(500).json({ message: 'Server error' });
+    // 🔥 IMPROVED: Enhanced error logging
+    console.error('💥 CREATE APPOINTMENT ERROR:');
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Request body was:', req.body);
+    console.error('User was:', req.user ? req.user._id : 'NO USER');
+    
+    return res.status(500).json({ 
+      message: 'Server error creating appointment',
+      error: process.env.NODE_ENV === 'development' ? {
+        name: error.name,
+        message: error.message
+      } : undefined
+    });
   }
 };
+
 
 // GET /api/appointments - Get authenticated patient's appointments
 export const getPatientAppointments = async (req, res) => {
