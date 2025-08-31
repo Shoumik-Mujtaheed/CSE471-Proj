@@ -13,6 +13,9 @@ import triageRoutes from './routes/triage.js';
 import appointmentRoutes from './routes/appointment.js';
 import timeSlotRoutes from './routes/timeSlot.js';
 
+// Suppress dotenv logs
+process.env.DOTENV_LOG_LEVEL = 'silent';
+
 // Load environment variables
 dotenv.config();
 
