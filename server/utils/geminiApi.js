@@ -4,7 +4,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 async function callGemini(prompt) {
   const apiKey = process.env.GEMINI_API_KEY;
   
-  console.log('🔑 Gemini API Key:', apiKey ? 'Set' : 'Not set');
+  console.log(' Gemini API Key:', apiKey ? 'Set' : 'Not set');
   
   if (!apiKey) {
     console.error('❌ GEMINI_API_KEY not found in environment variables');

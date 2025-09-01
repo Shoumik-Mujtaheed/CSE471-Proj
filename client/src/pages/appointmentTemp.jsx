@@ -13,8 +13,8 @@ const AppointmentPage = () => {
 
   const [formData, setFormData] = useState({
     doctorId: '',
-    date: '',          // legacy (kept for UI compatibility)
-    dayOfWeek: '',     // legacy (kept for UI compatibility)
+    date: '',          
+    dayOfWeek: '',     
     timeSlot: '',
     reason: '',
     urgency: 'normal',
@@ -163,7 +163,7 @@ const AppointmentPage = () => {
     return `${year}-${month}-${day}`;
   };
 
-  // CHANGED: when selecting a slot, prefer the earliest available concrete date the server exposed for that day,
+  //  when selecting a slot, prefer the earliest available concrete date the server exposed for that day,
   // otherwise fall back to getNextOccurrence (legacy behavior).
   const handleTimeSlotSelect = (dayOfWeek, timeSlot) => {
     // find matching slot to read availableDates if present
@@ -178,7 +178,7 @@ const AppointmentPage = () => {
       dayOfWeek, 
       timeSlot,
       date: concrete,        // legacy UI value
-      bookedDate: concrete   // NEW: the value actually required by backend
+      bookedDate: concrete   //the value actually required by backend
     }));
   };
 
@@ -194,7 +194,7 @@ const AppointmentPage = () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
-    // NEW: construct request with bookedDate (not date/dayOfWeek)
+    //construct request with bookedDate (not date/dayOfWeek)
     const requestPayload = {
       doctorId: formData.doctorId,
       reason: formData.reason,

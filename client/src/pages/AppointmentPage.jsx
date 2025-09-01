@@ -18,7 +18,7 @@ const AppointmentPage = () => {
     timeSlot: '',
     reason: '',
     urgency: 'normal',
-    bookedDate: '' // NEW: concrete date required by backend
+    bookedDate: '' //  concrete date required by backend
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');

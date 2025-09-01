@@ -15,7 +15,7 @@ export const protect = async (req, res, next) => {
       // Attach user to request object (excluding password)
       req.user = await User.findById(decoded.id).select('-password');
       
-      // 🔥 FIX: Check if user exists
+      //  Check if user exists
       if (!req.user) {
         return res.status(401).json({ message: 'Not authorized, user not found' });
       }
@@ -27,7 +27,7 @@ export const protect = async (req, res, next) => {
       return res.status(401).json({ message: 'Not authorized, token failed' });
     }
   } else {
-    // 🔥 FIX: This should be an else block, not separate if
+    // This should be an else block, not separate if
     console.error('❌ No token provided');
     return res.status(401).json({ message: 'Not authorized, no token' });
   }

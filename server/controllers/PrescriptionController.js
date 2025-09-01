@@ -31,7 +31,7 @@ export const createPrescription = async (req, res) => {
   const { patient, doctor, disease, prescribedMedicines, referredDoctor, referredDoctorName, appointment } = req.body;
   
   try {
-    // 🔥 FIX: Find doctor profile by doctor ID (not user ID)
+    //  Find doctor profile by doctor ID (not user ID)
     const doctorProfile = await Doctor.findById(doctor);
     if (!doctorProfile) {
       return res.status(400).json({ message: 'Valid doctor not found' });
@@ -77,7 +77,7 @@ export const createPrescription = async (req, res) => {
     });
 
     await prescription.save();
-    // 🔥 NEW: Deduct medicines from inventory after prescription is saved
+    //  Deduct medicines from inventory after prescription is saved
     try {
       const stockResult = await bulkDeductMedicines(processedMedicines);
       if (stockResult.errors.length > 0) {
@@ -89,7 +89,7 @@ export const createPrescription = async (req, res) => {
       // Note: We don't fail the prescription creation if stock update fails
     }
 
-    // 🔥 NEW: Mark the appointment as completed if appointment ID is provided
+    //  Mark the appointment as completed if appointment ID is provided
     if (appointment) {
       try {
         await updateAppointmentStatus(appointment, 'completed');
@@ -148,7 +148,7 @@ export const getPrescriptionsByPatient = async (req, res) => {
 // Get prescriptions by doctor
 export const getMyPrescriptions = async (req, res) => {
   try {
-    // 🔥 FIX: Find doctor profile from authenticated user
+    // Find doctor profile from authenticated user
     const doctorProfile = await Doctor.findOne({ user: req.user._id });
     if (!doctorProfile) {
       return res.status(400).json({ 
@@ -178,7 +178,7 @@ export const getMyPrescriptions = async (req, res) => {
 // Get prescription by ID
 export const getPrescriptionById = async (req, res) => {
   try {
-    // 🔥 FIX: Find doctor profile from authenticated user
+    //  Find doctor profile from authenticated user
     const doctorProfile = await Doctor.findOne({ user: req.user._id });
     if (!doctorProfile) {
       return res.status(400).json({
@@ -216,7 +216,7 @@ export const getPrescriptionById = async (req, res) => {
 // Update prescription
 export const updatePrescription = async (req, res) => {
   try {
-    // 🔥 FIX: Find doctor profile from authenticated user
+    //  Find doctor profile from authenticated user
     const doctorProfile = await Doctor.findOne({ user: req.user._id });
     if (!doctorProfile) {
       return res.status(400).json({
@@ -256,7 +256,7 @@ export const updatePrescription = async (req, res) => {
 // Cancel prescription
 export const cancelPrescription = async (req, res) => {
   try {
-    // 🔥 FIX: Find doctor profile from authenticated user
+    //  Find doctor profile from authenticated user
     const doctorProfile = await Doctor.findOne({ user: req.user._id });
     if (!doctorProfile) {
       return res.status(400).json({
@@ -296,7 +296,7 @@ export const cancelPrescription = async (req, res) => {
 // Get patient prescription history
 export const getPatientPrescriptionHistory = async (req, res) => {
   try {
-    // 🔥 FIX: Find doctor profile from authenticated user
+    //  Find doctor profile from authenticated user
     const doctorProfile = await Doctor.findOne({ user: req.user._id });
     if (!doctorProfile) {
       return res.status(400).json({

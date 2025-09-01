@@ -39,7 +39,7 @@ function EMRPage() {
         setProfile(profileData);
       }
 
-      // 🔥 FIXED: Fetch prescriptions using patient ID endpoint
+      //  Fetch prescriptions using patient ID endpoint
       const prescriptionsRes = await fetch(`${API_BASE_URL}/api/prescriptions/patient/${patientId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -48,7 +48,7 @@ function EMRPage() {
         const prescriptionsList = prescriptionsData.prescriptions || [];
         setPrescriptions(prescriptionsList);
 
-        // 🔥 NEW: Fetch invoice for each prescription
+        //  Fetch invoice for each prescription
         for (const prescription of prescriptionsList) {
           if (prescription.invoice || prescription.invoiceId) {
             try {
@@ -392,7 +392,7 @@ function EMRPage() {
               )}
             </div>
 
-            {/* Completed Appointments */}
+            {/*  Appointments */}
             <div>
               <h3 style={{ color: '#1976d2', marginBottom: '15px' }}>Completed Appointments</h3>
               {appointments.filter(apt => apt.status === 'completed').length === 0 ? (
