@@ -5,7 +5,12 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   build: {
-    outDir: 'dist' // This should match Vercel's Output Directory setting
+    outDir: 'dist',
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
   },
   server: {
     proxy: {
