@@ -1,10 +1,10 @@
 // utils/api.js
 
 const DEV_API_URL = 'http://localhost:5000';
-const PROD_API_URL = process.env.REACT_APP_API_URL || 'https://your-backend-url.vercel.app';
+const PROD_API_URL = import.meta.env.VITE_API_URL || 'https://your-backend-url.vercel.app';
 
 // Determine which URL to use based on environment
-const isProd = process.env.NODE_ENV === 'production';
+const isProd = import.meta.env.MODE === 'production';
 export const API_BASE_URL = isProd ? PROD_API_URL : DEV_API_URL;
 
 // Enhanced API call function with better error handling
