@@ -31,13 +31,13 @@ function Login() {
     if (res.ok) {
       const data = await res.json();
       
-      // 🔥 FIX: Store the complete user data (including doctorId)
+      //  Store the complete user data (including doctorId)
       localStorage.setItem('userData', JSON.stringify(data));
       localStorage.setItem('userToken', data.token);
       
-      // Debug logging (remove after fixing)
-      console.log('🔍 Login success, stored data:', data);
-      console.log('🔍 doctorId in response:', data.doctorId);
+      
+      // console.log('Login success, stored data:', data);
+      // console.log(' doctorId in response:', data.doctorId);
       
       if (data.nextPath) {
         navigate(data.nextPath);
@@ -45,7 +45,7 @@ function Login() {
         if (data.role === 'doctor') {
           navigate('/doctor-dashboard');
         } else if (data.role === 'staff') {
-          navigate('/staff-dashboard');
+          navigate('/staff/dashboard');
         } else {
           navigate('/patient-dashboard');
         }
