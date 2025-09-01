@@ -24,27 +24,27 @@ const SYMPTOMS = loadConfig('symptoms.json');
 const SYMPTOM_WEIGHTS = loadConfig('symptom_weights.json');
 const SYMPTOM_SPECIALTY_MATRIX = loadConfig('symptom_specialty_matrix.json');
 
-// Get available specialties from database (simplified)
-const getAvailableSpecialties = () => {
-  // Common medical specialties - you can expand this list
-  return [
-    'General Medicine',
-    'Cardiology', 
-    'Neurology',
-    'Orthopedics',
-    'Pediatrics',
-    'Dermatology',
-    'Gastroenterology',
-    'Endocrinology',
-    'Psychiatry',
-    'Ophthalmology',
-    'ENT',
-    'Urology',
-    'Gynecology',
-    'Oncology',
-    'Emergency Medicine'
-  ];
-};
+// // Get available specialties from database (simplified)
+// const getAvailableSpecialties = () => {
+//   // Common medical specialties 
+//   return [
+//     'General Medicine',
+//     'Cardiology', 
+//     'Neurology',
+//     'Orthopedics',
+//     'Pediatrics',
+//     'Dermatology',
+//     'Gastroenterology',
+//     'Endocrinology',
+//     'Psychiatry',
+//     'Ophthalmology',
+//     'ENT',
+//     'Urology',
+//     'Gynecology',
+//     'Oncology',
+//     'Emergency Medicine'
+//   ];
+// };
 
 // Ask Gemini to recommend specialty for unknown symptoms
 const getGeminiSpecialtyRecommendation = async (symptoms) => {

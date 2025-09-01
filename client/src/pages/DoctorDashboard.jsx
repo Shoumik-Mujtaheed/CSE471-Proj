@@ -100,50 +100,52 @@ const DoctorDashboard = () => {
 
   // Time Slot Request Functions
   const handleSlotRequest = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  if (slotRequestData.dayOfWeek.length === 0) {
+    alert('Please select at least one day');
+    return;
+  }
+  if (!slotRequestData.timeSlot) {
+    alert('Please select a time slot');
+    return;
+  }
+
+  try {
+    const token = getToken();
     
-    if (slotRequestData.dayOfWeek.length === 0) {
-      alert('Please select at least one day');
-      return;
-    }
-
-    if (!slotRequestData.timeSlot) {
-      alert('Please select a time slot');
-      return;
-    }
-
-    try {
-      const token = getToken();
+    // 🔥 FIX: Send separate request for each day
+    for (const day of slotRequestData.dayOfWeek) {
       const res = await fetch(`${API_BASE_URL}/api/time-slots/request`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
-          dayOfWeek: slotRequestData.dayOfWeek,
+          dayOfWeek: day,        // Single day number, not array
           timeSlot: slotRequestData.timeSlot,
           notes: slotRequestData.notes
         })
       });
 
-      if (res.ok) {
-        alert('Time slot request submitted successfully! (Pending admin approval)');
-        setShowSlotRequestForm(false);
-        setSlotRequestData({
-          dayOfWeek: [],
-          timeSlot: '',
-          notes: ''
-        });
-        fetchData(getToken());
-      } else {
+      if (!res.ok) {
         const errorData = await res.json();
-        alert(errorData.message || 'Failed to submit request');
+        alert(`Failed for ${getDayName(day)}: ${errorData.message || 'Unknown error'}`);
+        return; // Stop if any request fails
       }
-    } catch (err) {
-      alert('Network error. Please try again.');
     }
-  };
+
+    alert('Time slot requests submitted successfully! (Pending admin approval)');
+    setShowSlotRequestForm(false);
+    setSlotRequestData({ dayOfWeek: [], timeSlot: '', notes: '' });
+    fetchData(getToken());
+    
+  } catch (err) {
+    console.error('Error submitting requests:', err);
+    alert('Network error. Please try again.');
+  }
+};
+
 
   const getDayName = (dayNumber) => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
