@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../utils/api';
 import PatientEMR from '../components/PatientEMR';
 import WritePrescription from '../components/WritePrescription';
+import { useAuth } from '../hooks/useAuth';
+import { useProfile } from '../hooks/useProfile';
 
 const DoctorDashboard = () => {
   const [patients, setPatients] = useState([]);
@@ -18,12 +20,9 @@ const DoctorDashboard = () => {
   const [slotRequestData, setSlotRequestData] = useState({
     dayOfWeek: [],
     timeSlot: '',
-    notes: '',
-    validFrom: '',
-    validTo: ''
+    notes: ''
   });
 
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   
   // Form states
@@ -40,20 +39,19 @@ const DoctorDashboard = () => {
   });
   
   const navigate = useNavigate();
+  const { checkAuth, logout } = useAuth('doctor');
+  const { profile, loading, fetchProfile, getToken } = useProfile('doctor');
 
   useEffect(() => {
-    const token = localStorage.getItem('userToken');
-    if (!token) {
-      navigate('/login');
-      return;
+    if (checkAuth()) {
+      const token = getToken();
+      fetchProfile(token);
+      fetchData(token);
     }
-    fetchData();
-  }, [navigate]);
+  }, [checkAuth, fetchProfile, getToken]);
 
-  const fetchData = async () => {
+  const fetchData = async (token) => {
     try {
-      const token = localStorage.getItem('userToken');
-      
       // Fetch patients using the original endpoint
       const patientsRes = await fetch(`${API_BASE_URL}/api/doctor/patients`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -92,18 +90,16 @@ const DoctorDashboard = () => {
 
     } catch (err) {
       console.error('Error fetching data:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('userToken');
+    logout();
     navigate('/');
   };
 
   // Time Slot Request Functions
-  const handleSlotRequestSubmit = async (e) => {
+  const handleSlotRequest = async (e) => {
     e.preventDefault();
     
     if (slotRequestData.dayOfWeek.length === 0) {
@@ -111,31 +107,24 @@ const DoctorDashboard = () => {
       return;
     }
 
-    if (!slotRequestData.validFrom || !slotRequestData.validTo) {
-      alert('Please select Start Date and End Date for these weekly slots.');
-      return;
-    }
-    
-    const from = new Date(slotRequestData.validFrom);
-    const to = new Date(slotRequestData.validTo);
-    if (isNaN(from.getTime()) || isNaN(to.getTime())) {
-      alert('Please select a valid date range.');
-      return;
-    }
-    if (from > to) {
-      alert('Start Date must be before End Date.');
+    if (!slotRequestData.timeSlot) {
+      alert('Please select a time slot');
       return;
     }
 
     try {
-      const token = localStorage.getItem('userToken');
+      const token = getToken();
       const res = await fetch(`${API_BASE_URL}/api/time-slots/request`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(slotRequestData)
+        body: JSON.stringify({
+          dayOfWeek: slotRequestData.dayOfWeek,
+          timeSlot: slotRequestData.timeSlot,
+          notes: slotRequestData.notes
+        })
       });
 
       if (res.ok) {
@@ -144,11 +133,9 @@ const DoctorDashboard = () => {
         setSlotRequestData({
           dayOfWeek: [],
           timeSlot: '',
-          notes: '',
-          validFrom: '',
-          validTo: ''
+          notes: ''
         });
-        fetchData();
+        fetchData(getToken());
       } else {
         const errorData = await res.json();
         alert(errorData.message || 'Failed to submit request');
@@ -198,7 +185,7 @@ const DoctorDashboard = () => {
   const handleLeaveRequestSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('userToken');
+      const token = getToken();
       const res = await fetch(`${API_BASE_URL}/api/doctor/leave-requests`, {
         method: 'POST',
         headers: { 
@@ -218,7 +205,7 @@ const DoctorDashboard = () => {
           reason: '',
           isEmergency: false
         });
-        fetchData();
+        fetchData(getToken());
       } else {
         const errorData = await res.json();
         alert(errorData.message || 'Failed to submit request');
@@ -232,7 +219,7 @@ const DoctorDashboard = () => {
     if (!window.confirm('Are you sure you want to cancel this leave request?')) return;
     
     try {
-      const token = localStorage.getItem('userToken');
+      const token = getToken();
       const res = await fetch(`${API_BASE_URL}/api/doctor/leave-requests/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
@@ -240,7 +227,7 @@ const DoctorDashboard = () => {
 
       if (res.ok) {
         alert('Leave request cancelled successfully!');
-        fetchData();
+        fetchData(getToken());
       } else {
         const errorData = await res.json();
         alert(errorData.message || 'Failed to cancel request');
@@ -263,7 +250,7 @@ const DoctorDashboard = () => {
   };
 
   const handlePrescriptionCreated = () => {
-    fetchData();
+    fetchData(getToken());
   };
 
   const renderTabContent = () => {
@@ -739,8 +726,154 @@ const DoctorDashboard = () => {
         {renderTabContent()}
       </div>
 
-      {/* Time Slot Request Modal - Add all your existing modals here */}
-      {/* ... existing modal code ... */}
+      {/* Time Slot Request Modal */}
+      {showSlotRequestForm && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '30px',
+            borderRadius: '10px',
+            width: '90%',
+            maxWidth: '500px',
+            maxHeight: '80vh',
+            overflowY: 'auto'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0, color: '#007bff' }}>⏰ Request New Time Slot</h3>
+              <button
+                onClick={() => setShowSlotRequestForm(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  color: '#666'
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleSlotRequest}>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#333' }}>
+                  Select Days:
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+                  {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, index) => (
+                    <label key={day} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input
+                        type="checkbox"
+                        value={index}
+                        checked={slotRequestData.dayOfWeek.includes(index)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSlotRequestData(prev => ({
+                              ...prev,
+                              dayOfWeek: [...prev.dayOfWeek, index]
+                            }));
+                          } else {
+                            setSlotRequestData(prev => ({
+                              ...prev,
+                              dayOfWeek: prev.dayOfWeek.filter(d => d !== index)
+                            }));
+                          }
+                        }}
+                      />
+                      {day}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#333' }}>
+                  Time Slot:
+                </label>
+                <select
+                  value={slotRequestData.timeSlot}
+                  onChange={(e) => setSlotRequestData(prev => ({ ...prev, timeSlot: e.target.value }))}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '16px'
+                  }}
+                >
+                  <option value="">Select a time slot</option>
+                  <option value="8-12">8:00 AM - 12:00 PM</option>
+                  <option value="12-4">12:00 PM - 4:00 PM</option>
+                  <option value="4-8">4:00 PM - 8:00 PM</option>
+                  <option value="20-00">8:00 PM - 12:00 AM</option>
+                </select>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#333' }}>
+                  Notes (Optional):
+                </label>
+                <textarea
+                  value={slotRequestData.notes}
+                  onChange={(e) => setSlotRequestData(prev => ({ ...prev, notes: e.target.value }))}
+                  placeholder="Any special notes or preferences..."
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '16px',
+                    minHeight: '80px',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowSlotRequestForm(false)}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#6c757d',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Submit Request
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Patient EMR Modal */}
       {showPatientEMR && selectedPatient && (

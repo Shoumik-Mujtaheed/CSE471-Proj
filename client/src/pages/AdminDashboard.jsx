@@ -4,6 +4,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../utils/api';
+import { useAuth } from '../hooks/useAuth';
+import { useProfile } from '../hooks/useProfile';
 
 function AdminDashboard() {
   const [timeSlots, setTimeSlots] = useState([]);
@@ -11,24 +13,22 @@ function AdminDashboard() {
   const [doctors, setDoctors] = useState([]);
   const [staff, setStaff] = useState([]);
   const [patients, setPatients] = useState([]); // Added patients state
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('pending-requests');
   
   const navigate = useNavigate();
+  const { checkAuth, logout } = useAuth('admin');
+  const { profile, loading, fetchProfile, getToken } = useProfile('admin');
 
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
-    if (!token) {
-      navigate('/admin-login');
-      return;
+    if (checkAuth()) {
+      const token = getToken();
+      fetchProfile(token);
+      fetchData(token);
     }
-    fetchData();
-  }, [navigate]);
+  }, [checkAuth, fetchProfile, getToken]);
 
-  const fetchData = async () => {
+  const fetchData = async (token) => {
     try {
-      const token = localStorage.getItem('adminToken');
-      
       // Fetch patients - Added patients API call
       try {
         const patientsRes = await fetch(`${API_BASE_URL}/api/admin/patients`, {
@@ -94,20 +94,13 @@ function AdminDashboard() {
       }
     } catch (err) {
       console.error('Error fetching data:', err);
-    } finally {
-      setLoading(false);
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    navigate('/');
   };
 
   // Time Slot Functions
   const approveTimeSlot = async (id) => {
     try {
-      const token = localStorage.getItem('adminToken');
+      const token = getToken();
       const res = await fetch(`${API_BASE_URL}/api/time-slots/${id}/approve`, {
         method: 'PATCH',
         headers: { 
@@ -118,7 +111,7 @@ function AdminDashboard() {
 
       if (res.ok) {
         alert('Time slot approved successfully!');
-        fetchData(); // Refresh data
+        fetchData(getToken()); // Refresh data
       } else {
         const errorData = await res.json();
         alert(errorData.message || 'Failed to approve time slot');
@@ -130,7 +123,7 @@ function AdminDashboard() {
 
   const rejectTimeSlot = async (id) => {
     try {
-      const token = localStorage.getItem('adminToken');
+      const token = getToken();
       const res = await fetch(`${API_BASE_URL}/api/time-slots/${id}/reject`, {
         method: 'PATCH',
         headers: { 
@@ -142,7 +135,7 @@ function AdminDashboard() {
 
       if (res.ok) {
         alert('Time slot rejected successfully!');
-        fetchData(); // Refresh data
+        fetchData(getToken()); // Refresh data
       } else {
         const errorData = await res.json();
         alert(errorData.message || 'Failed to reject time slot');
@@ -161,7 +154,7 @@ function AdminDashboard() {
   // Leave Request Functions
   const approveLeaveRequest = async (id) => {
     try {
-      const token = localStorage.getItem('adminToken');
+      const token = getToken();
       const res = await fetch(`${API_BASE_URL}/api/admin/leave-requests/${id}/approve`, {
         method: 'POST',
         headers: { 
@@ -173,7 +166,7 @@ function AdminDashboard() {
 
       if (res.ok) {
         alert('Leave request approved successfully!');
-        fetchData(); // Refresh data
+        fetchData(getToken()); // Refresh data
       } else {
         const errorData = await res.json();
         alert(errorData.message || 'Failed to approve request');
@@ -185,7 +178,7 @@ function AdminDashboard() {
 
   const rejectLeaveRequest = async (id) => {
     try {
-      const token = localStorage.getItem('adminToken');
+      const token = getToken();
       const res = await fetch(`${API_BASE_URL}/api/admin/leave-requests/${id}/reject`, {
         method: 'POST',
         headers: { 
@@ -197,7 +190,7 @@ function AdminDashboard() {
 
       if (res.ok) {
         alert('Leave request rejected successfully!');
-        fetchData(); // Refresh data
+        fetchData(getToken()); // Refresh data
       } else {
         const errorData = await res.json();
         alert(errorData.message || 'Failed to reject request');
@@ -942,7 +935,7 @@ function AdminDashboard() {
         {/* Logout Button */}
         <div style={{ textAlign: 'center', marginTop: '2rem' }}>
           <button
-            onClick={handleLogout}
+            onClick={logout}
             style={{
               padding: '10px 20px',
               backgroundColor: '#dc3545',

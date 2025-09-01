@@ -69,15 +69,6 @@ function App() {
       />
       
       <Route
-        path="/staff-dashboard"
-        element={
-          isUserLoggedIn()
-            ? <StaffDashboard />
-            : <Navigate to="/login" />
-        }
-      />
-      
-      <Route
         path="/staff/dashboard"
         element={
           isUserLoggedIn()
